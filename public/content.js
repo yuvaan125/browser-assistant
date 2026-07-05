@@ -1,10 +1,21 @@
-console.log("✅ Browser Assistant content script loaded!");
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "GET_PAGE_INFO") {
+    const text = document.body.innerText;
 
-console.log("Page Title:");
-console.log(document.title);
+    const words = text
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
 
-console.log("Current URL:");
-console.log(window.location.href);
+    sendResponse({
+      title: document.title,
+      url: window.location.href,
+      selectedText: window.getSelection()?.toString() || "",
+      wordCount: words.length,
+      characterCount: text.length,
+      readingTime: Math.max(1, Math.ceil(words.length / 200)),
+    });
+  }
 
-console.log("Character Count:");
-console.log(document.body.innerText.length);
+  return true;
+});

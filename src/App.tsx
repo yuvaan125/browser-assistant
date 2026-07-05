@@ -1,41 +1,58 @@
-import { useEffect, useState } from "react";
-import { getCurrentTab } from "./services/chrome";
+import "./App.css";
+
+import PageCard from "./components/PageCard";
+import SelectedTextCard from "./components/SelectedTextCard";
+import Conversation from "./components/Conversation";
+import ActionBar from "./components/ActionBar";
+
+import { useCurrentPage } from "./hooks/useCurrentPage";
+import { useAI } from "./hooks/useAI";
+
 
 function App() {
-  const [tab, setTab] = useState<chrome.tabs.Tab | null>(null);
+  const { page, loading, error } = useCurrentPage();
 
-  useEffect(() => {
-    async function loadTab() {
-      const currentTab = await getCurrentTab();
-      setTab(currentTab);
-    }
-
-    loadTab();
-  }, []);
+  const {
+  messages,
+  loading: aiLoading,
+  explain,
+  summarize,
+  clearConversation,
+} = useAI();
 
   return (
-    <div style={{ padding: "16px", width: "350px" }}>
-      <h2>Current Tab</h2>
+    <div className="app">
+      <h1>Browser Assistant</h1>
 
-      {tab ? (
+      {loading && <p>Loading...</p>}
+
+      {error && <p>{error}</p>}
+
+      {page && (
         <>
-          <p>
-            <strong>Title:</strong>
-            <br />
-            {tab.title}
-          </p>
+          <PageCard page={page} />
 
-          <p>
-            <strong>URL:</strong>
-            <br />
-            {tab.url}
-          </p>
+          <SelectedTextCard text={page.selectedText} />
+
+          <Conversation
+  messages={messages}
+  loading={aiLoading}
+/>
+
+          <ActionBar
+            selectedText={page.selectedText}
+            onExplain={() => explain(page.selectedText)}
+            onSummarize={() => summarize(page.selectedText)}
+          />
+          <button
+  onClick={clearConversation}
+  style={{ marginTop: "12px" }}
+>
+  Clear Conversation
+</button>
         </>
-      ) : (
-        <p>Loading...</p>
       )}
     </div>
   );
 }
-
 export default App;
