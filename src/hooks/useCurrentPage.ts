@@ -12,8 +12,12 @@ export function useCurrentPage() {
       try {
         const data = await getPageInfo();
         setPage(data);
-      } catch {
-        setError("Unable to read this page.");
+      } catch (err) {
+  console.error(err);
+  setError(
+    err instanceof Error ? err.message : "Unable to read this page."
+  );
+
       } finally {
         setLoading(false);
       }
