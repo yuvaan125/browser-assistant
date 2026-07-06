@@ -3,6 +3,7 @@ import {
   explainText,
   summarizeText,
   explainPage,
+  askAboutPage,
 } from "../services/ai";
 
 import type { ChatMessage } from "../types/chat";
@@ -67,6 +68,26 @@ export function useAI() {
     );
   }
 
+  async function ask(
+    question: string,
+    pageTitle: string,
+    pageUrl: string,
+    pageText: string
+  ) {
+    if (!question.trim()) return;
+
+    await runRequest(
+      question,
+      () =>
+        askAboutPage(
+          question,
+          pageTitle,
+          pageUrl,
+          pageText
+        )
+    );
+  }
+
   function clearConversation() {
     setMessages([]);
   }
@@ -77,6 +98,7 @@ export function useAI() {
     explain,
     summarize,
     explainEntirePage,
+    ask,
     clearConversation,
   };
 }

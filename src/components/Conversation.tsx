@@ -1,4 +1,9 @@
+import { Bot, Copy, Sparkles, User } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 import type { ChatMessage } from "../types/chat";
+
 import "./Conversation.css";
 
 interface ConversationProps {
@@ -10,37 +15,81 @@ function Conversation({
   messages,
   loading,
 }: ConversationProps) {
+
+  async function copyMessage(text: string) {
+    await navigator.clipboard.writeText(text);
+  }
+
   return (
-    <div style={{ marginTop: "20px" }}>
-      <h2>Conversation</h2>
+    <div className="card conversation-card">
+      <div className="conversation-header">
+        <Sparkles size={18} />
+        <h3>Conversation</h3>
+      </div>
 
       {messages.length === 0 && !loading && (
-        <p>
-          <em>No conversation yet.</em>
-        </p>
+        <div className="conversation-empty">
+          <Bot size={28} />
+          <p>
+            Select text or click <strong>Explain Page</strong> to
+            start chatting with Orbit AI.
+          </p>
+        </div>
       )}
 
       {messages.map((message) => (
         <div
           key={message.id}
-          style={{
-            marginBottom: "12px",
-            padding: "8px",
-            border: "1px solid #ddd",
-            borderRadius: "6px",
-          }}
+          className={`message ${
+            message.role === "user"
+              ? "user-message"
+              : "assistant-message"
+          }`}
         >
-          <strong>
-            {message.role === "user" ? "You" : "Assistant"}
-          </strong>
+          <div className="message-header">
 
-          <p style={{ whiteSpace: "pre-wrap" }}>
-            {message.content}
-          </p>
+            <div className="message-title">
+
+              {message.role === "user" ? (
+                <>
+                  <User size={16} />
+                  <span>You</span>
+                </>
+              ) : (
+                <>
+                  <Bot size={16} />
+                  <span>Orbit AI</span>
+                </>
+              )}
+
+            </div>
+
+            {message.role === "assistant" && (
+              <button
+                className="copy-button"
+                onClick={() => copyMessage(message.content)}
+              >
+                <Copy size={15} />
+              </button>
+            )}
+
+          </div>
+
+          <div className="message-content markdown-body">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {message.content}
+            </ReactMarkdown>
+          </div>
+
         </div>
       ))}
 
-      {loading && <p>Thinking...</p>}
+      {loading && (
+        <div className="thinking">
+          <Bot size={18} />
+          <span>Thinking...</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 .conversation-card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .conversation-header {
@@ -12,37 +12,37 @@
 
 .conversation-header h3 {
   margin: 0;
-
-  font-size: 15px;
-
-  color: var(--text);
-
+  font-size: 16px;
   font-weight: 700;
 }
 
 .conversation-empty {
-  padding: 24px;
-
-  border: 2px dashed var(--border);
-
-  border-radius: 12px;
-
-  text-align: center;
-
-  color: var(--text-secondary);
-
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+
+  padding: 28px;
+
+  border: 2px dashed var(--border);
+  border-radius: 14px;
+
+  color: var(--text-secondary);
+  text-align: center;
 }
 
 .message {
+  padding: 16px;
+
   border-radius: 14px;
 
-  padding: 14px;
+  animation: fadeIn .25s ease;
 
-  animation: fadeIn .2s ease;
+  transition: .2s;
+}
+
+.message:hover {
+  transform: translateY(-1px);
 }
 
 .user-message {
@@ -55,14 +55,12 @@
 
 .message-header {
   display: flex;
-
   align-items: center;
-
   gap: 8px;
 
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 
-  font-weight: 600;
+  font-weight: 700;
 
   color: var(--text);
 }
@@ -70,20 +68,16 @@
 .message-content {
   color: var(--text);
 
-  line-height: 1.6;
+  font-size: 14px;
 
-  white-space: pre-wrap;
+  line-height: 1.7;
 
   word-break: break-word;
-
-  font-size: 14px;
 }
 
 .thinking {
   display: flex;
-
   align-items: center;
-
   gap: 10px;
 
   color: var(--primary);
@@ -91,14 +85,131 @@
   font-weight: 600;
 }
 
+/* ---------------- Markdown ---------------- */
+
+.markdown-body {
+  color: var(--text);
+}
+
+.markdown-body > *:first-child {
+  margin-top: 0;
+}
+
+.markdown-body > *:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  margin: 22px 0 10px;
+
+  font-weight: 700;
+
+  color: var(--text);
+}
+
+.markdown-body p {
+  margin: 10px 0;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  margin: 10px 0;
+  padding-left: 22px;
+}
+
+.markdown-body li {
+  margin: 6px 0;
+}
+
+.markdown-body strong {
+  font-weight: 700;
+}
+
+.markdown-body code {
+  background: var(--surface);
+
+  padding: 2px 6px;
+
+  border-radius: 6px;
+
+  font-family: Consolas, monospace;
+
+  font-size: .92em;
+}
+
+.markdown-body pre {
+  background: #111827;
+
+  color: white;
+
+  padding: 16px;
+
+  border-radius: 12px;
+
+  overflow-x: auto;
+}
+
+.markdown-body pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.markdown-body blockquote {
+  margin: 14px 0;
+  padding-left: 14px;
+
+  border-left: 4px solid var(--primary);
+
+  color: var(--text-secondary);
+}
+
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--border);
+  padding: 8px;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
 
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+.message-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copy-button {
+  width: 32px;
+  height: 32px;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: var(--text-secondary);
+
+  border: none;
+
+  transition: .2s;
+}
+
+.copy-button:hover {
+  background: var(--surface);
+  color: var(--primary);
 }
