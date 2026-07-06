@@ -1,4 +1,5 @@
 import type { ChatMessage } from "../types/chat";
+import "./Conversation.css";
 
 interface ConversationProps {
   messages: ChatMessage[];

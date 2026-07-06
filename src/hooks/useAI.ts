@@ -1,61 +1,70 @@
 import { useState } from "react";
-import { explainText, summarizeText } from "../services/ai";
+import {
+  explainText,
+  summarizeText,
+  explainPage,
+} from "../services/ai";
+
 import type { ChatMessage } from "../types/chat";
 
 export function useAI() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
 
-  async function explain(text: string) {
-    if (!text.trim()) return;
-
+  async function runRequest(
+    userPrompt: string,
+    aiRequest: () => Promise<string>
+  ) {
     setLoading(true);
 
     const userMessage: ChatMessage = {
       id: Date.now(),
       role: "user",
-      content: "Explain the selected text",
+      content: userPrompt,
     };
 
     setMessages((prev) => [...prev, userMessage]);
 
-    const result = await explainText(text);
+    try {
+      const result = await aiRequest();
 
-    const aiMessage: ChatMessage = {
-      id: Date.now() + 1,
-      role: "assistant",
-      content: result,
-    };
+      const aiMessage: ChatMessage = {
+        id: Date.now() + 1,
+        role: "assistant",
+        content: result,
+      };
 
-    setMessages((prev) => [...prev, aiMessage]);
+      setMessages((prev) => [...prev, aiMessage]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    setLoading(false);
+  async function explain(text: string) {
+    if (!text.trim()) return;
+
+    await runRequest(
+      "Explain the selected text",
+      () => explainText(text)
+    );
   }
 
   async function summarize(text: string) {
     if (!text.trim()) return;
 
-    setLoading(true);
+    await runRequest(
+      "Summarize the selected text",
+      () => summarizeText(text)
+    );
+  }
 
-    const userMessage: ChatMessage = {
-      id: Date.now(),
-      role: "user",
-      content: "Summarize the selected text",
-    };
+  async function explainEntirePage(text: string) {
+    if (!text.trim()) return;
 
-    setMessages((prev) => [...prev, userMessage]);
-
-    const result = await summarizeText(text);
-
-    const aiMessage: ChatMessage = {
-      id: Date.now() + 1,
-      role: "assistant",
-      content: result,
-    };
-
-    setMessages((prev) => [...prev, aiMessage]);
-
-    setLoading(false);
+    await runRequest(
+      "Explain this webpage",
+      () => explainPage(text)
+    );
   }
 
   function clearConversation() {
@@ -67,6 +76,7 @@ export function useAI() {
     loading,
     explain,
     summarize,
+    explainEntirePage,
     clearConversation,
   };
 }

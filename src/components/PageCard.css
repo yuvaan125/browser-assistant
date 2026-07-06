@@ -1,0 +1,70 @@
+.page-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.page-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-card-icon {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--primary-light);
+
+  color: var(--primary);
+
+  border-radius: 14px;
+}
+
+.page-card h3 {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.page-title {
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.page-url {
+  margin-top: 4px;
+  display: inline-block;
+
+  color: var(--primary);
+
+  text-decoration: none;
+
+  font-size: 14px;
+}
+
+.page-url:hover {
+  text-decoration: underline;
+}
+
+.page-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--text-secondary);
+
+  font-size: 13px;
+}

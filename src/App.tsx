@@ -1,5 +1,6 @@
 import "./App.css";
 import { useState } from "react";
+import { Settings as SettingsIcon } from "lucide-react";
 
 import AssistantView from "./components/AssistantView";
 import Settings from "./components/Settings";
@@ -9,29 +10,24 @@ export default function App() {
 
   return (
     <div className="app">
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <h1
-          style={{
-            margin: 0,
-            fontSize: 22,
-          }}
-        >
-          Browser Assistant
-        </h1>
+      <header className="app-header">
+        <div>
+          <h1 className="app-title">Orbit AI</h1>
+          <p className="app-subtitle">
+            Your AI browser copilot
+          </p>
+        </div>
 
         {view === "assistant" && (
-          <button onClick={() => setView("settings")}>
-            ⚙️
+          <button
+            className="icon-button"
+            onClick={() => setView("settings")}
+            aria-label="Open Settings"
+          >
+            <SettingsIcon size={18} />
           </button>
         )}
-      </div>
+      </header>
 
       {view === "assistant" ? (
         <AssistantView />

@@ -1,14 +1,32 @@
 .app {
-  width: 380px;
-  padding: 16px;
-  font-family: Arial, Helvetica, sans-serif;
+  width: 400px;
+  min-height: 600px;
+
+  background: var(--background);
+
+  padding: 20px;
+
+  box-sizing: border-box;
+
+  font-family: Inter, system-ui, sans-serif;
 }
 
-h1 {
-  margin-top: 0;
-  font-size: 24px;
+.app-header {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 24px;
 }
 
-p {
-  margin: 8px 0;
+.app-title {
+  font-size: 22px;
+
+  font-weight: 700;
+
+  color: var(--text);
+
+  margin: 0;
 }

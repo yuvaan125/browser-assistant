@@ -14,6 +14,7 @@ export default function AssistantView() {
     loading: aiLoading,
     explain,
     summarize,
+    explainEntirePage,
     clearConversation,
   } = useAI();
 
@@ -35,10 +36,11 @@ export default function AssistantView() {
           />
 
           <ActionBar
-            selectedText={page.selectedText}
-            onExplain={() => explain(page.selectedText)}
-            onSummarize={() => summarize(page.selectedText)}
-          />
+  selectedText={page.selectedText}
+  onExplain={() => explain(page.selectedText)}
+  onSummarize={() => summarize(page.selectedText)}
+  onExplainPage={() => explainEntirePage(page.pageText)}
+/>
 
           <button
             onClick={clearConversation}

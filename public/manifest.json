@@ -4,17 +4,18 @@
   "version": "0.1.0",
   "description": "An AI-powered browser assistant.",
   "permissions": [
-  "tabs",
-  "activeTab"
-],
+    "tabs",
+    "activeTab",
+    "storage"
+  ],
   "action": {
     "default_popup": "index.html",
     "default_title": "Browser Assistant"
   },
   "content_scripts": [
-  {
-    "matches": ["<all_urls>"],
-    "js": ["content.js"]
-  }
-]
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
 }

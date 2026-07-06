@@ -1,0 +1,25 @@
+.action-grid {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 12px;
+
+  margin-top: 20px;
+}
+
+.action-grid button {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  height: 46px;
+
+  font-size: 14px;
+
+  font-weight: 600;
+}

@@ -8,13 +8,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .filter(Boolean);
 
     sendResponse({
-      title: document.title,
-      url: window.location.href,
-      selectedText: window.getSelection()?.toString() || "",
-      wordCount: words.length,
-      characterCount: text.length,
-      readingTime: Math.max(1, Math.ceil(words.length / 200)),
-    });
+  title: document.title,
+  url: window.location.href,
+  selectedText: window.getSelection()?.toString() || "",
+  pageText: text,
+  wordCount: words.length,
+  characterCount: text.length,
+  readingTime: Math.max(1, Math.ceil(words.length / 200)),
+});
   }
 
   return true;

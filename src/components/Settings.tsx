@@ -5,11 +5,13 @@ import {
   removeApiKey,
 } from "../services/settings";
 
-type Props = {
+interface SettingsProps {
   onBack: () => void;
-};
+}
 
-export default function Settings({ onBack }: Props) {
+export default function Settings({
+  onBack,
+}: SettingsProps) {
   const [apiKey, setApiKey] = useState("");
 
   useEffect(() => {
@@ -26,28 +28,33 @@ export default function Settings({ onBack }: Props) {
 
   async function handleSave() {
     await saveApiKey(apiKey);
-    alert("API key saved.");
+
+    alert("Gemini API Key saved.");
   }
 
   async function handleDelete() {
     await removeApiKey();
+
     setApiKey("");
-    alert("API key removed.");
+
+    alert("API Key deleted.");
   }
 
   return (
-    <>
-      <button onClick={onBack}>← Back</button>
+    <div>
+      <button onClick={onBack}>
+        ← Back
+      </button>
 
       <h2>Settings</h2>
 
-      <p>OpenAI API Key</p>
+      <p>Gemini API Key</p>
 
       <input
         type="password"
         value={apiKey}
+        placeholder="AIza..."
         onChange={(e) => setApiKey(e.target.value)}
-        placeholder="sk-..."
         style={{
           width: "100%",
           padding: 8,
@@ -61,11 +68,11 @@ export default function Settings({ onBack }: Props) {
       </button>
 
       <button
-        style={{ marginLeft: 8 }}
         onClick={handleDelete}
+        style={{ marginLeft: 10 }}
       >
         Delete
       </button>
-    </>
+    </div>
   );
 }

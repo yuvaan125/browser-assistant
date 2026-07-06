@@ -1,0 +1,47 @@
+button {
+  height: 40px;
+  padding: 0 18px;
+
+  border: none;
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  background: var(--primary);
+  color: white;
+
+  font-weight: 600;
+  font-size: 14px;
+
+  transition: 0.2s;
+}
+
+button:hover {
+  background: var(--primary-hover);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  transition:
+    transform .15s ease,
+    background .15s ease,
+    box-shadow .15s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+
+  box-shadow: var(--shadow);
+}
+
+button:active {
+  transform: scale(.98);
+}
