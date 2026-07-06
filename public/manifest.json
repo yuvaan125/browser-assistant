@@ -1,16 +1,20 @@
 {
   "manifest_version": 3,
-  "name": "Browser Assistant",
+  "name": "Orbit AI",
   "version": "0.1.0",
-  "description": "An AI-powered browser assistant.",
+  "description": "Your AI browser copilot.",
   "permissions": [
     "tabs",
     "activeTab",
     "storage"
   ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
   "action": {
     "default_popup": "index.html",
-    "default_title": "Browser Assistant"
+    "default_title": "Orbit AI"
   },
   "content_scripts": [
     {
