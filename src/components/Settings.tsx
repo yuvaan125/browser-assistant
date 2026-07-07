@@ -27,10 +27,17 @@ export default function Settings({
   }, []);
 
   async function handleSave() {
-    await saveApiKey(apiKey);
+  console.log("Saving:", apiKey);
 
-    alert("Gemini API Key saved.");
-  }
+  await saveApiKey(apiKey);
+
+  console.log(
+    "Storage contents:",
+    await chrome.storage.local.get(null)
+  );
+
+  alert("Gemini API Key saved.");
+}
 
   async function handleDelete() {
     await removeApiKey();

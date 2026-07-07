@@ -39,9 +39,15 @@ Rules:
 `;
 
 async function generate(userPrompt: string): Promise<string> {
+  console.log("Orbit: Starting generate()");
+
   const ai = await getClient();
 
+  console.log("Orbit: Client created");
+
   try {
+    console.log("Orbit: Calling Gemini...");
+
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `${SYSTEM_PROMPT}
@@ -49,10 +55,18 @@ async function generate(userPrompt: string): Promise<string> {
 ${userPrompt}`,
     });
 
+    console.log("Orbit: Gemini finished");
+    console.log(response);
+
     return response.text ?? "No response generated.";
   } catch (error) {
-    console.error("Gemini Error:", error);
-    throw new Error("Unable to generate AI response.");
+    console.error("FULL GEMINI ERROR:", error);
+
+    if (error instanceof Error) {
+      return `Error:\n\n${error.message}`;
+    }
+
+    return `Unknown Error:\n\n${String(error)}`;
   }
 }
 
