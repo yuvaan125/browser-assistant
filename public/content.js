@@ -647,7 +647,7 @@ async function handleOrbitAction(action) {
 
 
 // ======================================
-// Selection Handling
+// Selection Handlings
 // ======================================
 
 function updateFloatingButton() {
