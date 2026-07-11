@@ -143,16 +143,16 @@ function createOrbitMenu(){
 
     position:"absolute",
 
-    width:"260px",
+    width:"300px",
 
     background:"#fff",
 
-    borderRadius:"18px",
+    borderRadius:"16px",
 
-    border:"1px solid rgba(0,0,0,.06)",
+    border:"1px solid #ECECEC",
 
     boxShadow:
-      "0 24px 60px rgba(15,23,42,.18)",
+"0 10px 32px rgba(15,23,42,.12)",
 
     overflow:"hidden",
 
@@ -215,30 +215,46 @@ function hideMenu() {
 function getHeader() {
   return `
     <div style="
-      padding:16px;
-      font-weight:600;
-      font-size:15px;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      border-bottom:1px solid #f1f1f1;
-      background:#fff;
+      padding:14px 16px;
+      border-bottom:1px solid #ECECEC;
+      background:#FFFFFF;
     ">
-      <span style="
-        width:26px;
-        height:26px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        border-radius:50%;
-        background:#F5F3FF;
-        color:#7C3AED;
-        flex-shrink:0;
-      ">
-        ✨
-      </span>
 
-      Orbit AI
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:4px;
+      ">
+
+        <div style="
+          font-size:16px;
+          font-weight:600;
+          color:#111827;
+        ">
+          Orbit AI
+        </div>
+
+        <div style="
+          font-size:11px;
+          font-weight:600;
+          color:#7C3AED;
+          background:#F3E8FF;
+          padding:4px 8px;
+          border-radius:999px;
+        ">
+          Beta
+        </div>
+
+      </div>
+
+      <div style="
+        font-size:12px;
+        color:#6B7280;
+      ">
+        Select an action
+      </div>
+
     </div>
   `;
 }
@@ -251,24 +267,19 @@ function getFooter() {
       display:flex;
       justify-content:space-between;
       align-items:center;
-      padding:12px;
-      border-top:1px solid #eee;
+      gap:12px;
+      padding:16px;
+      border-top:1px solid #F3F4F6;
+      background:#FFFFFF;
     ">
 
-      <div style="
-        display:flex;
-        gap:8px;
-      ">
+      <button id="orbit-back">
+        ← Back
+      </button>
 
-        <button id="orbit-back">
-          ← Back
-        </button>
-
-        <button id="orbit-copy">
-          📋 Copy
-        </button>
-
-      </div>
+      <button id="orbit-copy">
+        📋 Copy
+      </button>
 
       <button id="orbit-close">
         ✕ Close
@@ -295,28 +306,93 @@ function getLoadingDots() {
 // Render Functions
 // ======================================
 
-function renderMainMenu(){
+function renderMainMenu() {
 
   stopLoadingAnimation();
 
-  orbitMenu.innerHTML=`
+  orbitMenu.innerHTML = `
 
     ${getHeader()}
 
-    <div class="orbit-item" data-action="explain">
-      📖 Explain
-    </div>
+    <div style="
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    ">
 
-    <div class="orbit-item" data-action="summarize">
-      📝 Summarize
-    </div>
+      <div class="orbit-item" data-action="explain">
 
-    <div class="orbit-item" data-action="translate">
-      🌍 Translate
-    </div>
+        <div>
 
-    <div class="orbit-item" data-action="ask orbit">
-      💬 Ask Orbit
+          <div class="orbit-title">
+            Explain
+          </div>
+
+          <div class="orbit-description">
+            Understand selected text
+          </div>
+
+        </div>
+
+        <div class="orbit-arrow">›</div>
+
+      </div>
+
+      <div class="orbit-item" data-action="summarize">
+
+        <div>
+
+          <div class="orbit-title">
+            Summarize
+          </div>
+
+          <div class="orbit-description">
+            Create a concise summary
+          </div>
+
+        </div>
+
+        <div class="orbit-arrow">›</div>
+
+      </div>
+
+      <div class="orbit-item" data-action="translate">
+
+        <div>
+
+          <div class="orbit-title">
+            Translate
+          </div>
+
+          <div class="orbit-description">
+            Translate into English
+          </div>
+
+        </div>
+
+        <div class="orbit-arrow">›</div>
+
+      </div>
+
+      <div class="orbit-item" data-action="ask">
+
+        <div>
+
+          <div class="orbit-title">
+            Ask
+          </div>
+
+          <div class="orbit-description">
+            Ask anything about this page
+          </div>
+
+        </div>
+
+        <div class="orbit-arrow">›</div>
+
+      </div>
+
     </div>
 
   `;
@@ -451,39 +527,92 @@ function renderResponse(text) {
 // Event Binding
 // ======================================
 
-function bindMenuItems(){
+function bindMenuItems() {
 
-  orbitMenu.querySelectorAll(".orbit-item").forEach(item=>{
+  orbitMenu.querySelectorAll(".orbit-item").forEach((item) => {
 
-    Object.assign(item.style,{
+    // Card styling
+    Object.assign(item.style, {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "11px 14px",
+      border: "1px solid #ECECEC",
+      borderRadius: "10px",
+      background: "#FFFFFF",
+      cursor: "pointer",
+      transition: "all .18s ease",
+      userSelect: "none"
+    });
 
-      padding:"13px 16px",
+    // Title
+    const title = item.querySelector(".orbit-title");
 
-      cursor:"pointer",
+    if (title) {
+      Object.assign(title.style, {
+        fontSize: "13px",
+        fontWeight: "600",
+        color: "#111827"
+      });
+    }
 
-      transition:"all .16s ease",
+    // Description
+    const description = item.querySelector(".orbit-description");
 
-      userSelect:"none"
+    if (description) {
+      Object.assign(description.style, {
+        marginTop: "3px",
+        fontSize: "11px",
+        color: "#6B7280",
+        lineHeight: "1.4"
+      });
+    }
+
+    // Arrow
+    const arrow = item.querySelector(".orbit-arrow");
+
+    if (arrow) {
+      Object.assign(arrow.style, {
+        color: "#9CA3AF",
+        fontSize: "20px",
+        fontWeight: "400",
+        transition: "transform .18s ease"
+      });
+    }
+
+    // Hover In
+    item.addEventListener("mouseenter", () => {
+
+      item.style.background = "#FAF7FF";
+      item.style.borderColor = "#DDD6FE";
+      item.style.transform = "translateY(-1px)";
+      item.style.boxShadow =
+        "0 6px 18px rgba(124,58,237,.08)";
+
+      if (arrow) {
+        arrow.style.transform = "translateX(4px)";
+      }
 
     });
 
-    item.addEventListener("mouseenter",()=>{
+    // Hover Out
+    item.addEventListener("mouseleave", () => {
 
-      item.style.background="#F3E8FF";
-      item.style.paddingLeft="20px";
+      item.style.background = "#FFFFFF";
+      item.style.borderColor = "#ECECEC";
+      item.style.transform = "translateY(0)";
+      item.style.boxShadow = "none";
+
+      if (arrow) {
+        arrow.style.transform = "translateX(0)";
+      }
 
     });
 
-    item.addEventListener("mouseleave",()=>{
+    // Click
+    item.addEventListener("click", () => {
 
-      item.style.background="#fff";
-      item.style.paddingLeft="16px";
-
-    });
-
-    item.addEventListener("click",()=>{
-
-      currentAction=item.dataset.action;
+      currentAction = item.dataset.action;
 
       renderLoading();
 
@@ -495,70 +624,118 @@ function bindMenuItems(){
 
 }
 
+
+
 function bindFooterButtons() {
 
-  const backBtn =
-    orbitMenu.querySelector("#orbit-back");
+  const backBtn = orbitMenu.querySelector("#orbit-back");
+  const copyBtn = orbitMenu.querySelector("#orbit-copy");
+  const closeBtn = orbitMenu.querySelector("#orbit-close");
 
-  const copyBtn =
-    orbitMenu.querySelector("#orbit-copy");
+  const buttons = [backBtn, copyBtn, closeBtn].filter(Boolean);
 
-  const closeBtn =
-    orbitMenu.querySelector("#orbit-close");
-
-
-  [backBtn, copyBtn, closeBtn].forEach(btn => {
-
-    if (!btn) return;
+  buttons.forEach((btn) => {
 
     Object.assign(btn.style, {
 
-      border: "none",
+      flex: "1",
 
-      background: "#F5F5F5",
+      display: "flex",
 
-      borderRadius: "8px",
+      alignItems: "center",
 
-      padding: "8px 12px",
+      justifyContent: "center",
+
+      gap: "8px",
+
+      padding: "12px 16px",
+
+      border: "1px solid #E5E7EB",
+
+      borderRadius: "14px",
+
+      background: "#FFFFFF",
+
+      color: "#374151",
+
+      fontSize: "14px",
+
+      fontWeight: "500",
 
       cursor: "pointer",
 
-      fontSize: "13px",
+      transition: "all .18s ease",
 
-      transition: ".15s"
+      outline: "none"
 
     });
 
+  });
+
+  // Back Button
+  Object.assign(backBtn.style, {
+
+    color: "#6D28D9",
+
+    borderColor: "#E9D5FF",
+
+    background: "#FFFFFF"
+
+  });
+
+  // Copy Button
+  Object.assign(copyBtn.style, {
+
+    color: "#6D28D9",
+
+    borderColor: "#DDD6FE",
+
+    background: "#FAF7FF"
+
+  });
+
+  // Close Button
+  Object.assign(closeBtn.style, {
+
+    color: "#DC2626",
+
+    borderColor: "#FECACA",
+
+    background: "#FEF2F2"
+
+  });
+
+  buttons.forEach((btn) => {
+
     btn.addEventListener("mouseenter", () => {
 
-      btn.style.background = "#E9E9E9";
+      btn.style.transform = "translateY(-1px)";
+      btn.style.boxShadow = "0 6px 16px rgba(0,0,0,.08)";
 
     });
 
     btn.addEventListener("mouseleave", () => {
 
-      btn.style.background = "#F5F5F5";
+      btn.style.transform = "translateY(0)";
+      btn.style.boxShadow = "none";
 
     });
 
   });
 
-
-  backBtn?.addEventListener("click", () => {
+  backBtn.addEventListener("click", () => {
 
     renderMainMenu();
 
   });
 
-
-  closeBtn?.addEventListener("click", () => {
+  closeBtn.addEventListener("click", () => {
 
     hideMenu();
 
   });
 
-
-  copyBtn?.addEventListener("click", async () => {
+  copyBtn.addEventListener("click", async () => {
 
     await navigator.clipboard.writeText(currentResponse);
 
