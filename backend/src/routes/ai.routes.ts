@@ -3,6 +3,6 @@ import { explain } from "../controllers/ai.controller";
 
 const router = Router();
 
-router.post("/explain", explain);
+router.post("/", explain);
 
 export default router;
