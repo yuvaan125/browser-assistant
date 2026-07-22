@@ -35,20 +35,10 @@ async function getApiKey() {
   return result[API_KEY_STORAGE] || null;
 }
 
-async function generateWithGemini(prompt) {
-
-  const apiKey = await getApiKey();
-
-  if (!apiKey) {
-    throw new Error(
-      "Gemini API key not configured."
-    );
-  }
-
-  console.log("Calling Gemini...");
+async function generateWithBackend(action, payload) {
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    "http://localhost:3000/ai/explain",
     {
       method: "POST",
 
@@ -57,39 +47,24 @@ async function generateWithGemini(prompt) {
       },
 
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: `${SYSTEM_PROMPT}
-
-${prompt}`,
-              },
-            ],
-          },
-        ],
+        action,
+        ...payload,
       }),
     }
   );
 
   if (!response.ok) {
-
-    const error = await response.text();
-
-    console.error(error);
-
-    throw new Error(error);
-
+    throw new Error("Backend request failed.");
   }
 
   const data = await response.json();
 
-  console.log("Gemini Response:", data);
+  if (!data.success) {
+    throw new Error(data.error);
+  }
 
-  return (
-    data?.candidates?.[0]?.content?.parts?.[0]?.text ??
-    "No response generated."
-  );
+  return data.result;
+
 }
 
 // ======================================

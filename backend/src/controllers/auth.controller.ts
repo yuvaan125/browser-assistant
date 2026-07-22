@@ -6,16 +6,20 @@ export async function googleLogin(
   res: Response
 ) {
   try {
+
     const url = await getGoogleLoginUrl();
 
-    return res.json({
-      success: true,
-      url,
+    return res.redirect(url);
+
+  } catch (error) {
+
+    return res.status(500).json({
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Unknown error",
     });
-  } catch (error: unknown) {
-  return res.status(500).json({
-    success: false,
-    error: error instanceof Error ? error.message : "Unknown error",
-  });
-}
+
+  }
 }

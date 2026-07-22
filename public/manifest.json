@@ -1,19 +1,27 @@
 {
   "manifest_version": 3,
-  "name": "Browser Assistant",
+  "name": "Orbit AI",
   "version": "0.1.0",
   "description": "An AI-powered browser assistant.",
   "permissions": [
-    "tabs",
-    "activeTab",
-    "storage"
-  ],
+  "tabs",
+  "activeTab",
+  "storage",
+  "identity"
+],
+
+"host_permissions": [
+  "http://localhost:3000/*",
+  "https://*.supabase.co/*",
+  "https://accounts.google.com/*"
+],
+
   "background": {
     "service_worker": "background.js"
   },
   "action": {
     "default_popup": "index.html",
-    "default_title": "Browser Assistant"
+    "default_title": "Orbit AI"
   },
   "content_scripts": [
     {

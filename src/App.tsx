@@ -1,12 +1,48 @@
 import "./App.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Settings as SettingsIcon } from "lucide-react";
+import type { User } from "@supabase/supabase-js";
 
 import AssistantView from "./components/AssistantView";
 import Settings from "./components/Settings";
+import LoginScreen from "./components/LoginScreen";
+
+import { supabase } from "./auth/auth";
 
 export default function App() {
-  const [view, setView] = useState<"assistant" | "settings">("assistant");
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const [view, setView] = useState<"assistant" | "settings">(
+    "assistant"
+  );
+
+  useEffect(() => {
+    async function initialize() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setUser(session?.user ?? null);
+      setLoading(false);
+    }
+
+    initialize();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth Event:", _event);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="app">
@@ -18,7 +54,7 @@ export default function App() {
           </p>
         </div>
 
-        {view === "assistant" && (
+        {user && view === "assistant" && (
           <button
             className="icon-button"
             onClick={() => setView("settings")}
@@ -29,7 +65,9 @@ export default function App() {
         )}
       </header>
 
-      {view === "assistant" ? (
+      {!user ? (
+        <LoginScreen />
+      ) : view === "assistant" ? (
         <AssistantView />
       ) : (
         <Settings onBack={() => setView("assistant")} />
