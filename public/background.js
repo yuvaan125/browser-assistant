@@ -3,47 +3,22 @@
 // Part 1/3
 // ======================================
 
-const API_KEY_STORAGE = "gemini_api_key";
-
-const SYSTEM_PROMPT = `
-You are Orbit AI, an intelligent browser copilot.
-
-The user is already reading the webpage.
-Your job is to continue their understanding, not teach a lesson.
-
-Write like a knowledgeable friend sitting beside them.
-
-Rules:
-
-- Maximum 35 words unless absolutely necessary.
-- Write exactly one short paragraph.
-- Never use headings.
-- Never use bullet points.
-- Never use markdown.
-- Never repeat the selected text.
-- Never explain every keyword separately.
-- Never define obvious terms.
-- Combine ideas into one smooth explanation.
-- Don't sound like a teacher or textbook.
-- Don't start with "This means..." or "The text explains..."
-- Get straight to the point.
-`;
-
-async function getApiKey() {
-  const result = await chrome.storage.local.get(API_KEY_STORAGE);
-
-  return result[API_KEY_STORAGE] || null;
-}
-
 async function generateWithBackend(action, payload) {
 
+  const { accessToken } = await chrome.storage.local.get("accessToken");
+
+  console.log("Access Token:", accessToken);
+
   const response = await fetch(
-    "http://localhost:3000/ai/explain",
+    "http://localhost:3000/ai",
     {
       method: "POST",
 
       headers: {
         "Content-Type": "application/json",
+        ...(accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : {}),
       },
 
       body: JSON.stringify({
@@ -53,107 +28,19 @@ async function generateWithBackend(action, payload) {
     }
   );
 
+  console.log("Response Status:", response.status);
+
   if (!response.ok) {
-    throw new Error("Backend request failed.");
+    const text = await response.text();
+    console.error("Backend Response:", text);
+    throw new Error(`Backend ${response.status}: ${text}`);
   }
 
   const data = await response.json();
 
-  if (!data.success) {
-    throw new Error(data.error);
-  }
-
   return data.result;
-
 }
 
-// ======================================
-// Prompt Builders
-// ======================================
-
-function explainPrompt(text) {
-
-  return `
-The following text has been highlighted by someone reading a webpage.
-
-Continue their understanding naturally.
-
-Don't summarize.
-Don't paraphrase.
-Don't lecture.
-
-Imagine they asked:
-"So what does this actually mean?"
-
-Respond with one short paragraph of no more than 35 words.
-
-Highlighted text:
-
-${text}
-`;
-
-}
-
-function summarizePrompt(text) {
-
-  return `
-Summarize the following selected text.
-
-Respond using:
-
-Summary:
-
-Main Points:
-
-Text:
-
-${text}
-`;
-
-}
-
-function translatePrompt(text) {
-
-  return `
-Translate the following text into simple English.
-
-Text:
-
-${text}
-`;
-
-}
-
-function askPrompt(
-  question,
-  pageTitle,
-  pageUrl,
-  pageText
-) {
-
-  return `
-The user is viewing this webpage.
-
-Title:
-${pageTitle}
-
-URL:
-${pageUrl}
-
-Content:
-${pageText}
-
-Question:
-
-${question}
-
-Answer using the webpage first.
-
-If the answer isn't on the page,
-say so and then answer generally.
-`;
-
-}
 // ======================================
 // Orbit Message Handler
 // Part 2/3
@@ -186,38 +73,39 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         case "explain":
 
-          result = await generateWithGemini(
-            explainPrompt(selectedText)
-          );
+          result = await generateWithBackend("explain", {
+  selectedText,
+  pageTitle,
+  pageUrl,
+  pageText,
+});
 
           break;
 
         case "summarize":
 
-          result = await generateWithGemini(
-            summarizePrompt(selectedText)
-          );
+          result = await generateWithBackend("summarize", {
+  selectedText,
+});
 
           break;
 
         case "translate":
 
-          result = await generateWithGemini(
-            translatePrompt(selectedText)
-          );
+          result = await generateWithBackend("translate", {
+  selectedText,
+});
 
           break;
 
-        case "ask orbit":
+        case "ask":
 
-          result = await generateWithGemini(
-            askPrompt(
-              question || selectedText,
-              pageTitle,
-              pageUrl,
-              pageText
-            )
-          );
+          result = await generateWithBackend("ask", {
+  question: question || selectedText,
+  pageTitle,
+  pageUrl,
+  pageText,
+});
 
           break;
 
@@ -238,7 +126,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       sendResponse({
         success: false,
-        result:
+        error:
           error instanceof Error
             ? error.message
             : String(error),
@@ -298,7 +186,7 @@ function success(result) {
 function failure(error) {
   return {
     success: false,
-    result:
+    error:
       error instanceof Error
         ? error.message
         : String(error),

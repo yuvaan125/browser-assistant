@@ -765,8 +765,12 @@ async function handleOrbitAction(action) {
     return;
 
   }
-  console.log("Sending action:", action);
-  console.log("Selection:", currentSelection);
+ console.log("Sending action:", action);
+console.log("Selection:", currentSelection);
+
+console.log("chrome:", chrome);
+console.log("chrome.runtime:", chrome.runtime);
+
   chrome.runtime.sendMessage(
     {
       type: "ORBIT_ACTION",

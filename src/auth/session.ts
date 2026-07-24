@@ -16,7 +16,20 @@ export async function signOut() {
 export function onAuthStateChange(
   callback: (user: User | null) => void
 ) {
-  return supabase.auth.onAuthStateChange((_event, session) => {
-    callback(session?.user ?? null);
-  });
+  return supabase.auth.onAuthStateChange(async (_event, session) => {
+
+  console.log("Session:", session);
+
+  if (session?.access_token) {
+    console.log("Saving access token...");
+    await chrome.storage.local.set({
+      accessToken: session.access_token,
+    });
+  } else {
+    console.log("Removing access token...");
+    await chrome.storage.local.remove("accessToken");
+  }
+
+  callback(session?.user ?? null);
+});
 }

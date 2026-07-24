@@ -3,26 +3,38 @@
   "name": "Orbit AI",
   "version": "0.1.0",
   "description": "An AI-powered browser assistant.",
-  "permissions": [
-  "tabs",
-  "activeTab",
-  "storage",
-  "identity"
-],
 
-"host_permissions": [
-  "http://localhost:3000/*",
-  "https://*.supabase.co/*",
-  "https://accounts.google.com/*"
-],
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "storage",
+    "identity"
+  ],
+
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://*.supabase.co/*",
+    "https://accounts.google.com/*"
+  ],
+
+  "oauth2": {
+    "client_id": "479032247416-c2j19ric6dnnm0cb5eljk6m7845m67hr.apps.googleusercontent.com",
+    "scopes": [
+      "openid",
+      "email",
+      "profile"
+    ]
+  },
 
   "background": {
     "service_worker": "background.js"
   },
+
   "action": {
     "default_popup": "index.html",
     "default_title": "Orbit AI"
   },
+
   "content_scripts": [
     {
       "matches": ["<all_urls>"],

@@ -5,9 +5,10 @@ import type { User } from "@supabase/supabase-js";
 
 import AssistantView from "./components/AssistantView";
 import Settings from "./components/Settings";
-import LoginScreen from "./components/LoginScreen";
+//import LoginScreen from "./components/LoginScreen";
 
 import { supabase } from "./auth/auth";
+import { onAuthStateChange } from "./auth/session";
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -23,6 +24,19 @@ export default function App() {
         data: { session },
       } = await supabase.auth.getSession();
 
+      console.log("Initial session:", session);
+
+      if (session?.access_token) {
+        await chrome.storage.local.set({
+          accessToken: session.access_token,
+        });
+
+        console.log(
+          "Saved access token:",
+          await chrome.storage.local.get("accessToken")
+        );
+      }
+
       setUser(session?.user ?? null);
       setLoading(false);
     }
@@ -31,9 +45,8 @@ export default function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth Event:", _event);
-      setUser(session?.user ?? null);
+    } = onAuthStateChange((user) => {
+      setUser(user);
       setLoading(false);
     });
 
@@ -65,13 +78,11 @@ export default function App() {
         )}
       </header>
 
-      {!user ? (
-        <LoginScreen />
-      ) : view === "assistant" ? (
-        <AssistantView />
-      ) : (
-        <Settings onBack={() => setView("assistant")} />
-      )}
+      {view === "assistant" ? (
+  <AssistantView />
+) : (
+  <Settings onBack={() => setView("assistant")} />
+)}
     </div>
   );
 }
