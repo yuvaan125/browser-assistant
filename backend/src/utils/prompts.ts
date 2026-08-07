@@ -1,4 +1,13 @@
 import { AIRequest } from "../types";
+import { formatBlocksForPrompt } from "./formatContext";
+
+function referenceContentFor(request: AIRequest): string {
+  if (request.context?.retrievedBlocks?.length) {
+    return formatBlocksForPrompt(request.context.retrievedBlocks);
+  }
+
+  return request.pageText ?? "";
+}
 
 export function buildPrompt(request: AIRequest): string {
   switch (request.action) {
@@ -30,7 +39,7 @@ Page URL:
 ${request.pageUrl}
 
 Reference Webpage:
-${request.pageText}
+${referenceContentFor(request)}
 
 --------------------------------
 
@@ -74,7 +83,7 @@ URL:
 ${request.pageUrl}
 
 Content:
-${request.pageText}
+${referenceContentFor(request)}
 
 Question:
 ${request.question ?? request.selectedText}

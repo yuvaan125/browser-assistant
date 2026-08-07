@@ -1,32 +1,46 @@
 // ======================================
 // Orbit AI Background Service
-// Part 1/3
 // ======================================
 
-async function generateWithBackend(action, payload) {
+interface OrbitContext {
+  metadata: { title: string; url: string };
+  selectedText: string;
+  question?: string;
+  retrievedBlocks: { headingPath: string[]; text: string }[];
+  headingHierarchy: string[];
+}
 
+interface OrbitActionMessage {
+  type: "ORBIT_ACTION";
+  action: "explain" | "summarize" | "translate" | "ask";
+  selectedText: string;
+  pageTitle: string;
+  pageUrl: string;
+  context: OrbitContext;
+  question?: string;
+}
+
+async function generateWithBackend(
+  action: string,
+  payload: Record<string, unknown>
+): Promise<string> {
   const { accessToken } = await chrome.storage.local.get("accessToken");
 
   console.log("Access Token:", accessToken);
 
-  const response = await fetch(
-    "http://localhost:3000/ai",
-    {
-      method: "POST",
+  const response = await fetch("http://localhost:3000/ai", {
+    method: "POST",
 
-      headers: {
-        "Content-Type": "application/json",
-        ...(accessToken
-          ? { Authorization: `Bearer ${accessToken}` }
-          : {}),
-      },
+    headers: {
+      "Content-Type": "application/json",
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
 
-      body: JSON.stringify({
-        action,
-        ...payload,
-      }),
-    }
-  );
+    body: JSON.stringify({
+      action,
+      ...payload,
+    }),
+  });
 
   console.log("Response Status:", response.status);
 
@@ -43,112 +57,92 @@ async function generateWithBackend(action, payload) {
 
 // ======================================
 // Orbit Message Handler
-// Part 2/3
 // ======================================
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type !== "ORBIT_ACTION") {
     return;
   }
 
+  const {
+    action,
+    selectedText,
+    pageTitle,
+    pageUrl,
+    context,
+    question,
+  } = message as OrbitActionMessage;
+
   (async () => {
-
     try {
-
-      const {
-        action,
-        selectedText,
-        pageTitle,
-        pageUrl,
-        pageText,
-        question,
-      } = message;
-
       console.log("Orbit Action:", action);
 
       let result = "";
 
       switch (action) {
-
         case "explain":
-
           result = await generateWithBackend("explain", {
-  selectedText,
-  pageTitle,
-  pageUrl,
-  pageText,
-});
+            selectedText,
+            pageTitle,
+            pageUrl,
+            context,
+          });
 
           break;
 
         case "summarize":
-
           result = await generateWithBackend("summarize", {
-  selectedText,
-});
+            selectedText,
+          });
 
           break;
 
         case "translate":
-
           result = await generateWithBackend("translate", {
-  selectedText,
-});
+            selectedText,
+          });
 
           break;
 
         case "ask":
-
           result = await generateWithBackend("ask", {
-  question: question || selectedText,
-  pageTitle,
-  pageUrl,
-  pageText,
-});
+            question: question || selectedText,
+            pageTitle,
+            pageUrl,
+            context,
+          });
 
           break;
 
         default:
-
           result = "Unknown action.";
-
       }
 
       sendResponse({
         success: true,
         result,
       });
-
     } catch (error) {
-
       console.error("Orbit Error:", error);
 
       sendResponse({
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : String(error),
+        error: error instanceof Error ? error.message : String(error),
       });
-
     }
-
   })();
 
   return true;
-
 });
+
 // ======================================
 // Background Startup
-// Part 3/3
 // ======================================
 
 console.log("=================================");
 console.log("🚀 Orbit AI Background Started");
 console.log("=================================");
 
-// Wake-up message
 chrome.runtime.onInstalled.addListener(() => {
   console.log("Orbit AI installed.");
 });
@@ -159,38 +153,11 @@ chrome.runtime.onStartup.addListener(() => {
 
 // Keep service worker alive while requests are running
 self.addEventListener("unhandledrejection", (event) => {
-  console.error(
-    "Unhandled Promise Rejection:",
-    event.reason
-  );
+  console.error("Unhandled Promise Rejection:", event.reason);
 });
 
 self.addEventListener("error", (event) => {
-  console.error(
-    "Background Error:",
-    event.error || event.message
-  );
+  console.error("Background Error:", event.error || event.message);
 });
-
-// ======================================
-// Utility Functions
-// ======================================
-
-function success(result) {
-  return {
-    success: true,
-    result,
-  };
-}
-
-function failure(error) {
-  return {
-    success: false,
-    error:
-      error instanceof Error
-        ? error.message
-        : String(error),
-  };
-}
 
 console.log("✅ Orbit Background Ready");

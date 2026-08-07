@@ -60,11 +60,18 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <div>
-          <h1 className="app-title">Orbit AI</h1>
-          <p className="app-subtitle">
-            Your AI browser copilot
-          </p>
+        <div className="app-title-group">
+          <img
+            src="/icons/icon48.png"
+            alt="Orbit AI"
+            className="app-logo"
+          />
+          <div>
+            <h1 className="app-title">Orbit AI</h1>
+            <p className="app-subtitle">
+              Your AI browser copilot
+            </p>
+          </div>
         </div>
 
         {user && view === "assistant" && (

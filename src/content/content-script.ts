@@ -2,211 +2,170 @@
 // Orbit AI Content Script
 // ======================================
 
+import { buildContext } from "../context/contextBuilder";
+import type { OrbitAction } from "../context/types";
+
 // ======================================
 // Global State
 // ======================================
 
-let orbitButton = null;
-let orbitMenu = null;
+let orbitButton: HTMLButtonElement | null = null;
+let orbitMenu: HTMLDivElement | null = null;
 
 let currentSelection = "";
+let currentSelectionRange: Range | null = null;
 let currentResponse = "";
 let currentAction = "";
-let loadingInterval = null;
-
+let loadingInterval: ReturnType<typeof setInterval> | null = null;
 
 // ======================================
 // Utility Functions
 // ======================================
 
-function escapeHtml(text) {
-
+function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/\n/g, "<br>");
-
 }
 
 function stopLoadingAnimation() {
-
   if (loadingInterval) {
-
     clearInterval(loadingInterval);
-
     loadingInterval = null;
-
   }
-
 }
-
 
 // ======================================
 // Floating Button
 // ======================================
 
 function createOrbitButton() {
-
   if (orbitButton) return;
 
   orbitButton = document.createElement("button");
 
   orbitButton.id = "orbit-ai-button";
 
-  orbitButton.innerHTML = "✨";
+  orbitButton.innerHTML = `<img src="${chrome.runtime.getURL(
+    "icons/icon48.png"
+  )}" alt="Orbit AI" style="width:100%;height:100%;display:block;pointer-events:none;" />`;
 
-  Object.assign(orbitButton.style,{
+  Object.assign(orbitButton.style, {
+    position: "absolute",
 
-    position:"absolute",
+    width: "42px",
+    height: "42px",
 
-    width:"42px",
-    height:"42px",
+    padding: "0",
 
-    display:"none",
+    display: "none",
 
-    alignItems:"center",
-    justifyContent:"center",
+    alignItems: "center",
+    justifyContent: "center",
 
-    borderRadius:"50%",
+    borderRadius: "50%",
 
-    border:"1px solid rgba(255,255,255,.15)",
+    border: "none",
 
-    background:
-      "linear-gradient(135deg,#6D28D9,#8B5CF6)",
+    background: "transparent",
 
-    color:"#FFD54A",
+    cursor: "pointer",
 
-    cursor:"pointer",
+    boxShadow: "0 12px 32px rgba(109,40,217,.45)",
 
-    fontSize:"18px",
+    transition: "transform .18s ease, box-shadow .18s ease",
 
-    boxShadow:
-      "0 12px 32px rgba(109,40,217,.45)",
-
-    transition:
-      "transform .18s ease, box-shadow .18s ease",
-
-    zIndex:"2147483647"
-
+    zIndex: "2147483647",
   });
 
-
-  orbitButton.addEventListener("mouseenter",()=>{
-
-    orbitButton.style.transform="translateY(-2px) scale(1.08)";
-
-    orbitButton.style.boxShadow=
-      "0 18px 40px rgba(109,40,217,.55)";
-
+  orbitButton.addEventListener("mouseenter", () => {
+    orbitButton!.style.transform = "translateY(-2px) scale(1.08)";
+    orbitButton!.style.boxShadow = "0 18px 40px rgba(109,40,217,.55)";
   });
 
-
-  orbitButton.addEventListener("mouseleave",()=>{
-
-    orbitButton.style.transform="translateY(0) scale(1)";
-
-    orbitButton.style.boxShadow=
-      "0 12px 32px rgba(109,40,217,.45)";
-
+  orbitButton.addEventListener("mouseleave", () => {
+    orbitButton!.style.transform = "translateY(0) scale(1)";
+    orbitButton!.style.boxShadow = "0 12px 32px rgba(109,40,217,.45)";
   });
 
-
-  orbitButton.addEventListener("click",(e)=>{
-
+  orbitButton.addEventListener("click", (e) => {
     e.stopPropagation();
 
     positionMenuBelowButton();
-
     renderMainMenu();
-
     showMenu();
-
   });
 
   document.body.appendChild(orbitButton);
-
 }
-
 
 // ======================================
 // Popup
 // ======================================
 
-function createOrbitMenu(){
+function createOrbitMenu() {
+  if (orbitMenu) return;
 
-  if(orbitMenu) return;
+  orbitMenu = document.createElement("div");
 
-  orbitMenu=document.createElement("div");
+  Object.assign(orbitMenu.style, {
+    position: "absolute",
 
-  Object.assign(orbitMenu.style,{
+    width: "300px",
 
-    position:"absolute",
+    background: "#fff",
 
-    width:"300px",
+    borderRadius: "16px",
 
-    background:"#fff",
+    border: "1px solid #ECECEC",
 
-    borderRadius:"16px",
+    boxShadow: "0 10px 32px rgba(15,23,42,.12)",
 
-    border:"1px solid #ECECEC",
+    overflow: "hidden",
 
-    boxShadow:
-"0 10px 32px rgba(15,23,42,.12)",
+    display: "none",
 
-    overflow:"hidden",
+    opacity: "0",
 
-    display:"none",
+    transform: "scale(.95)",
 
-    opacity:"0",
+    transition: "opacity .18s ease, transform .18s ease",
 
-    transform:"scale(.95)",
+    fontFamily: "Inter,system-ui,sans-serif",
 
-    transition:
-      "opacity .18s ease, transform .18s ease",
-
-    fontFamily:
-      "Inter,system-ui,sans-serif",
-
-    zIndex:"2147483647"
-
+    zIndex: "2147483647",
   });
 
   document.body.appendChild(orbitMenu);
-
 }
-
 
 // ======================================
 // Popup Visibility
 // ======================================
 
 function showMenu() {
+  if (!orbitMenu) return;
 
   orbitMenu.style.display = "block";
 
   requestAnimationFrame(() => {
-
-    orbitMenu.style.opacity = "1";
-    orbitMenu.style.transform = "scale(1)";
-
+    orbitMenu!.style.opacity = "1";
+    orbitMenu!.style.transform = "scale(1)";
   });
-
 }
 
 function hideMenu() {
+  if (!orbitMenu) return;
 
   orbitMenu.style.opacity = "0";
   orbitMenu.style.transform = "scale(.95)";
 
   setTimeout(() => {
-
-    orbitMenu.style.display = "none";
-
-  },180);
-
+    orbitMenu!.style.display = "none";
+  }, 180);
 }
-
 
 // ======================================
 // Shared Components
@@ -260,7 +219,6 @@ function getHeader() {
 }
 
 function getFooter() {
-
   return `
 
     <div style="
@@ -288,27 +246,24 @@ function getFooter() {
     </div>
 
   `;
-
 }
 
 function getLoadingDots() {
-
   return `
     <div class="orbit-dot"></div>
     <div class="orbit-dot"></div>
     <div class="orbit-dot"></div>
   `;
-
 }
-
 
 // ======================================
 // Render Functions
 // ======================================
 
 function renderMainMenu() {
-
   stopLoadingAnimation();
+
+  if (!orbitMenu) return;
 
   orbitMenu.innerHTML = `
 
@@ -398,12 +353,12 @@ function renderMainMenu() {
   `;
 
   bindMenuItems();
-
 }
 
 function renderLoading() {
-
   stopLoadingAnimation();
+
+  if (!orbitMenu) return;
 
   orbitMenu.innerHTML = `
 
@@ -437,12 +392,10 @@ function renderLoading() {
 
   `;
 
-  const dots = orbitMenu.querySelectorAll(".orbit-dot");
+  const dots = orbitMenu.querySelectorAll<HTMLDivElement>(".orbit-dot");
 
-  dots.forEach(dot => {
-
+  dots.forEach((dot) => {
     Object.assign(dot.style, {
-
       width: "10px",
 
       height: "10px",
@@ -453,17 +406,14 @@ function renderLoading() {
 
       opacity: ".3",
 
-      transition: "opacity .25s ease"
-
+      transition: "opacity .25s ease",
     });
-
   });
 
   let active = 0;
 
   loadingInterval = setInterval(() => {
-
-    if (!document.body.contains(orbitMenu)) {
+    if (!orbitMenu || !document.body.contains(orbitMenu)) {
       stopLoadingAnimation();
       return;
     }
@@ -473,23 +423,20 @@ function renderLoading() {
       return;
     }
 
-    dots.forEach(dot => dot.style.opacity = ".3");
+    dots.forEach((dot) => (dot.style.opacity = ".3"));
 
-    if (dots[active])
-      dots[active].style.opacity = "1";
+    if (dots[active]) dots[active].style.opacity = "1";
 
     active++;
 
-    if (active >= dots.length)
-      active = 0;
-
+    if (active >= dots.length) active = 0;
   }, 260);
-
 }
 
-function renderResponse(text) {
-
+function renderResponse(text: string) {
   stopLoadingAnimation();
+
+  if (!orbitMenu) return;
 
   currentResponse = text;
 
@@ -519,18 +466,16 @@ function renderResponse(text) {
   `;
 
   bindFooterButtons();
-
 }
-
 
 // ======================================
 // Event Binding
 // ======================================
 
 function bindMenuItems() {
+  if (!orbitMenu) return;
 
-  orbitMenu.querySelectorAll(".orbit-item").forEach((item) => {
-
+  orbitMenu.querySelectorAll<HTMLDivElement>(".orbit-item").forEach((item) => {
     // Card styling
     Object.assign(item.style, {
       display: "flex",
@@ -542,62 +487,60 @@ function bindMenuItems() {
       background: "#FFFFFF",
       cursor: "pointer",
       transition: "all .18s ease",
-      userSelect: "none"
+      userSelect: "none",
     });
 
     // Title
-    const title = item.querySelector(".orbit-title");
+    const title = item.querySelector<HTMLDivElement>(".orbit-title");
 
     if (title) {
       Object.assign(title.style, {
         fontSize: "13px",
         fontWeight: "600",
-        color: "#111827"
+        color: "#111827",
       });
     }
 
     // Description
-    const description = item.querySelector(".orbit-description");
+    const description = item.querySelector<HTMLDivElement>(
+      ".orbit-description"
+    );
 
     if (description) {
       Object.assign(description.style, {
         marginTop: "3px",
         fontSize: "11px",
         color: "#6B7280",
-        lineHeight: "1.4"
+        lineHeight: "1.4",
       });
     }
 
     // Arrow
-    const arrow = item.querySelector(".orbit-arrow");
+    const arrow = item.querySelector<HTMLDivElement>(".orbit-arrow");
 
     if (arrow) {
       Object.assign(arrow.style, {
         color: "#9CA3AF",
         fontSize: "20px",
         fontWeight: "400",
-        transition: "transform .18s ease"
+        transition: "transform .18s ease",
       });
     }
 
     // Hover In
     item.addEventListener("mouseenter", () => {
-
       item.style.background = "#FAF7FF";
       item.style.borderColor = "#DDD6FE";
       item.style.transform = "translateY(-1px)";
-      item.style.boxShadow =
-        "0 6px 18px rgba(124,58,237,.08)";
+      item.style.boxShadow = "0 6px 18px rgba(124,58,237,.08)";
 
       if (arrow) {
         arrow.style.transform = "translateX(4px)";
       }
-
     });
 
     // Hover Out
     item.addEventListener("mouseleave", () => {
-
       item.style.background = "#FFFFFF";
       item.style.borderColor = "#ECECEC";
       item.style.transform = "translateY(0)";
@@ -606,38 +549,32 @@ function bindMenuItems() {
       if (arrow) {
         arrow.style.transform = "translateX(0)";
       }
-
     });
 
     // Click
     item.addEventListener("click", () => {
-
-      currentAction = item.dataset.action;
+      currentAction = item.dataset.action ?? "";
 
       renderLoading();
 
       handleOrbitAction(currentAction);
-
     });
-
   });
-
 }
 
-
-
 function bindFooterButtons() {
+  if (!orbitMenu) return;
 
-  const backBtn = orbitMenu.querySelector("#orbit-back");
-  const copyBtn = orbitMenu.querySelector("#orbit-copy");
-  const closeBtn = orbitMenu.querySelector("#orbit-close");
+  const backBtn = orbitMenu.querySelector<HTMLButtonElement>("#orbit-back");
+  const copyBtn = orbitMenu.querySelector<HTMLButtonElement>("#orbit-copy");
+  const closeBtn = orbitMenu.querySelector<HTMLButtonElement>("#orbit-close");
 
-  const buttons = [backBtn, copyBtn, closeBtn].filter(Boolean);
+  const buttons = [backBtn, copyBtn, closeBtn].filter(
+    (btn): btn is HTMLButtonElement => Boolean(btn)
+  );
 
   buttons.forEach((btn) => {
-
     Object.assign(btn.style, {
-
       flex: "1",
 
       display: "flex",
@@ -666,110 +603,100 @@ function bindFooterButtons() {
 
       transition: "all .18s ease",
 
-      outline: "none"
-
+      outline: "none",
     });
-
   });
 
   // Back Button
-  Object.assign(backBtn.style, {
+  if (backBtn) {
+    Object.assign(backBtn.style, {
+      color: "#6D28D9",
 
-    color: "#6D28D9",
+      borderColor: "#E9D5FF",
 
-    borderColor: "#E9D5FF",
-
-    background: "#FFFFFF"
-
-  });
+      background: "#FFFFFF",
+    });
+  }
 
   // Copy Button
-  Object.assign(copyBtn.style, {
+  if (copyBtn) {
+    Object.assign(copyBtn.style, {
+      color: "#6D28D9",
 
-    color: "#6D28D9",
+      borderColor: "#DDD6FE",
 
-    borderColor: "#DDD6FE",
-
-    background: "#FAF7FF"
-
-  });
+      background: "#FAF7FF",
+    });
+  }
 
   // Close Button
-  Object.assign(closeBtn.style, {
+  if (closeBtn) {
+    Object.assign(closeBtn.style, {
+      color: "#DC2626",
 
-    color: "#DC2626",
+      borderColor: "#FECACA",
 
-    borderColor: "#FECACA",
-
-    background: "#FEF2F2"
-
-  });
+      background: "#FEF2F2",
+    });
+  }
 
   buttons.forEach((btn) => {
-
     btn.addEventListener("mouseenter", () => {
-
       btn.style.transform = "translateY(-1px)";
       btn.style.boxShadow = "0 6px 16px rgba(0,0,0,.08)";
-
     });
 
     btn.addEventListener("mouseleave", () => {
-
       btn.style.transform = "translateY(0)";
       btn.style.boxShadow = "none";
-
     });
-
   });
 
-  backBtn.addEventListener("click", () => {
-
+  backBtn?.addEventListener("click", () => {
     renderMainMenu();
-
   });
 
-  closeBtn.addEventListener("click", () => {
-
+  closeBtn?.addEventListener("click", () => {
     hideMenu();
-
   });
 
-  copyBtn.addEventListener("click", async () => {
-
+  copyBtn?.addEventListener("click", async () => {
     await navigator.clipboard.writeText(currentResponse);
 
     copyBtn.innerHTML = "✅ Copied";
 
     setTimeout(() => {
-
       copyBtn.innerHTML = "📋 Copy";
-
     }, 1200);
-
   });
-
 }
-
 
 // ======================================
 // Action Handlers
 // ======================================
 
-async function handleOrbitAction(action) {
-
+async function handleOrbitAction(action: string) {
   if (!currentSelection.trim()) {
-
     renderResponse("Please select some text first.");
-
     return;
-
   }
- console.log("Sending action:", action);
-console.log("Selection:", currentSelection);
 
-console.log("chrome:", chrome);
-console.log("chrome.runtime:", chrome.runtime);
+  console.log("Sending action:", action);
+  console.log("Selection:", currentSelection);
+
+  const context = buildContext(action as OrbitAction, {
+    selectedText: currentSelection,
+    question: action === "ask" ? currentSelection : undefined,
+    selectionRange: currentSelectionRange,
+  });
+
+  console.log(
+    "Orbit context size: raw page =",
+    document.body.innerText.length,
+    "chars, retrieved context =",
+    JSON.stringify(context).length,
+    "chars"
+  );
 
   chrome.runtime.sendMessage(
     {
@@ -783,121 +710,78 @@ console.log("chrome.runtime:", chrome.runtime);
 
       pageUrl: window.location.href,
 
-      pageText: document.body.innerText
-
+      context,
     },
 
     (response) => {
-
       if (chrome.runtime.lastError) {
-
-        renderResponse(
-          "Unable to communicate with the extension."
-        );
-
+        renderResponse("Unable to communicate with the extension.");
         return;
-
       }
 
       if (!response) {
-
         renderResponse("No response received.");
-
         return;
-
       }
 
       if (!response.success) {
-
-        renderResponse(
-          response.error ||
-          "Something went wrong."
-        );
-
+        renderResponse(response.error || "Something went wrong.");
         return;
-
       }
 
       renderResponse(response.result);
-
     }
-
   );
-
 }
-
 
 // ======================================
 // Selection Handlings
 // ======================================
 
 function updateFloatingButton() {
+  if (!orbitButton) return;
 
   const selection = window.getSelection();
 
   if (!selection || selection.rangeCount === 0) {
-
     orbitButton.style.display = "none";
-
     return;
-
   }
 
   const text = selection.toString().trim();
 
   currentSelection = text;
+  currentSelectionRange = text ? selection.getRangeAt(0).cloneRange() : null;
 
   if (!text) {
-
     orbitButton.style.display = "none";
-
     return;
-
   }
 
-  const rect =
-    selection
-      .getRangeAt(0)
-      .getBoundingClientRect();
+  const rect = selection.getRangeAt(0).getBoundingClientRect();
 
-  orbitButton.style.left =
-    `${rect.right + window.scrollX + 8}px`;
+  orbitButton.style.left = `${rect.right + window.scrollX + 8}px`;
 
-  orbitButton.style.top =
-    `${rect.top + window.scrollY - 10}px`;
+  orbitButton.style.top = `${rect.top + window.scrollY - 10}px`;
 
   orbitButton.style.display = "flex";
-
 }
 
 document.addEventListener("mouseup", () => {
-
   setTimeout(updateFloatingButton, 10);
-
 });
 
 document.addEventListener("keyup", () => {
-
   setTimeout(updateFloatingButton, 10);
-
 });
-
 
 // Hide button when clicking elsewhere
 
 document.addEventListener("mousedown", (event) => {
-
-  if (
-    orbitButton &&
-    !orbitButton.contains(event.target)
-  ) {
-
+  if (orbitButton && !orbitButton.contains(event.target as Node)) {
     orbitButton.style.display = "none";
-
   }
-
 });
-
 
 // Hide popup when clicking outside
 //
@@ -911,92 +795,71 @@ document.addEventListener("mousedown", (event) => {
 // the content in. Capture runs first, while the DOM is still
 // intact, so containment is checked correctly.
 
-document.addEventListener("click", (event) => {
-
-  if (
-
-    orbitMenu &&
-    orbitMenu.style.display === "block" &&
-
-    !orbitMenu.contains(event.target) &&
-
-    !orbitButton.contains(event.target)
-
-  ) {
-
-    hideMenu();
-
-  }
-
-}, true);
-
+document.addEventListener(
+  "click",
+  (event) => {
+    if (
+      orbitMenu &&
+      orbitMenu.style.display === "block" &&
+      !orbitMenu.contains(event.target as Node) &&
+      !orbitButton?.contains(event.target as Node)
+    ) {
+      hideMenu();
+    }
+  },
+  true
+);
 
 // ======================================
 // Popup Positioning
 // ======================================
 
 function positionMenuBelowButton() {
+  if (!orbitButton || !orbitMenu) return;
 
   const rect = orbitButton.getBoundingClientRect();
 
-  orbitMenu.style.left =
-    `${rect.left + window.scrollX}px`;
+  orbitMenu.style.left = `${rect.left + window.scrollX}px`;
 
-  orbitMenu.style.top =
-    `${rect.bottom + window.scrollY + 8}px`;
-
+  orbitMenu.style.top = `${rect.bottom + window.scrollY + 8}px`;
 }
 
 function repositionMenu() {
-
-  if (
-    !orbitMenu ||
-    orbitMenu.style.display !== "block" ||
-    !orbitButton
-  ) {
+  if (!orbitMenu || orbitMenu.style.display !== "block" || !orbitButton) {
     return;
   }
 
   positionMenuBelowButton();
-
 }
 
-window.addEventListener("scroll", () => {
-
-  repositionMenu();
-
-}, true);
+window.addEventListener(
+  "scroll",
+  () => {
+    repositionMenu();
+  },
+  true
+);
 
 window.addEventListener("resize", () => {
-
   repositionMenu();
-
 });
-
 
 // ======================================
 // Chrome Messaging
 // ======================================
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === "GET_PAGE_INFO") {
-
     const pageText = document.body.innerText;
 
-    const words = pageText
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean);
+    const words = pageText.trim().split(/\s+/).filter(Boolean);
 
     sendResponse({
-
       title: document.title,
 
       url: window.location.href,
 
-      selectedText:
-        window.getSelection()?.toString() || "",
+      selectedText: window.getSelection()?.toString() || "",
 
       pageText,
 
@@ -1004,30 +867,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       characterCount: pageText.length,
 
-      readingTime: Math.max(
-        1,
-        Math.ceil(words.length / 200)
-      )
-
+      readingTime: Math.max(1, Math.ceil(words.length / 200)),
     });
-
   }
 
   return true;
-
 });
-
 
 // ======================================
 // Initialization
 // ======================================
 
 function initOrbitAI() {
-
   createOrbitButton();
-
   createOrbitMenu();
-
 }
 
 initOrbitAI();

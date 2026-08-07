@@ -21,6 +21,21 @@
   margin-bottom: 24px;
 }
 
+.app-title-group {
+  display: flex;
+
+  align-items: center;
+
+  gap: var(--space-3);
+}
+
+.app-logo {
+  width: 36px;
+  height: 36px;
+
+  border-radius: var(--radius-sm);
+}
+
 .app-title {
   font-size: 22px;
 
@@ -29,4 +44,12 @@
   color: var(--text);
 
   margin: 0;
+}
+
+.app-subtitle {
+  font-size: 12px;
+
+  color: var(--text-secondary);
+
+  margin: 2px 0 0;
 }

@@ -27,7 +27,7 @@
   },
 
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background/worker.ts"
   },
 
   "action": {
@@ -51,7 +51,14 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["src/content/content-script.ts"]
+    }
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*.png"],
+      "matches": ["<all_urls>"]
     }
   ]
 }
