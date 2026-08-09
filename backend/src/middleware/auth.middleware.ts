@@ -26,7 +26,9 @@ export async function requireAuth(
 
     next();
 
-  } catch {
+  } catch (error) {
+
+    console.error("requireAuth failed:", error);
 
     return res.status(401).json({
       success: false,

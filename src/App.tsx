@@ -1,17 +1,15 @@
 import "./App.css";
 import { useEffect, useState } from "react";
 import { Settings as SettingsIcon } from "lucide-react";
-import type { User } from "@supabase/supabase-js";
 
 import AssistantView from "./components/AssistantView";
 import Settings from "./components/Settings";
-//import LoginScreen from "./components/LoginScreen";
+import LoginScreen from "./components/LoginScreen";
 
-import { supabase } from "./auth/auth";
-import { onAuthStateChange } from "./auth/session";
+import { getCurrentUser, onAuthStateChange, type OrbitUser } from "./auth/session";
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<OrbitUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [view, setView] = useState<"assistant" | "settings">(
@@ -19,29 +17,10 @@ export default function App() {
   );
 
   useEffect(() => {
-    async function initialize() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      console.log("Initial session:", session);
-
-      if (session?.access_token) {
-        await chrome.storage.local.set({
-          accessToken: session.access_token,
-        });
-
-        console.log(
-          "Saved access token:",
-          await chrome.storage.local.get("accessToken")
-        );
-      }
-
-      setUser(session?.user ?? null);
+    getCurrentUser().then((user) => {
+      setUser(user);
       setLoading(false);
-    }
-
-    initialize();
+    });
 
     const {
       data: { subscription },
@@ -55,6 +34,10 @@ export default function App() {
 
   if (loading) {
     return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <LoginScreen />;
   }
 
   return (
@@ -74,7 +57,7 @@ export default function App() {
           </div>
         </div>
 
-        {user && view === "assistant" && (
+        {view === "assistant" && (
           <button
             className="icon-button"
             onClick={() => setView("settings")}

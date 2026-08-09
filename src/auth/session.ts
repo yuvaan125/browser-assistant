@@ -1,35 +1,35 @@
-import type { User } from "@supabase/supabase-js";
-import { supabase } from "./auth";
+export interface OrbitUser {
+  id: string;
+  email: string | null;
+}
 
-export async function getCurrentUser(): Promise<User | null> {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  return session?.user ?? null;
+export async function getCurrentUser(): Promise<OrbitUser | null> {
+  const result = await chrome.storage.local.get("orbitUser");
+  return (result.orbitUser as OrbitUser | undefined) ?? null;
 }
 
 export async function signOut() {
-  await supabase.auth.signOut();
+  await chrome.storage.local.remove(["accessToken", "orbitUser"]);
 }
 
 export function onAuthStateChange(
-  callback: (user: User | null) => void
+  callback: (user: OrbitUser | null) => void
 ) {
-  return supabase.auth.onAuthStateChange(async (_event, session) => {
-
-  console.log("Session:", session);
-
-  if (session?.access_token) {
-    console.log("Saving access token...");
-    await chrome.storage.local.set({
-      accessToken: session.access_token,
-    });
-  } else {
-    console.log("Removing access token...");
-    await chrome.storage.local.remove("accessToken");
+  function listener(
+    changes: { [key: string]: chrome.storage.StorageChange },
+    areaName: string
+  ) {
+    if (areaName !== "local" || !("orbitUser" in changes)) return;
+    callback((changes.orbitUser.newValue as OrbitUser | undefined) ?? null);
   }
 
-  callback(session?.user ?? null);
-});
+  chrome.storage.onChanged.addListener(listener);
+
+  return {
+    data: {
+      subscription: {
+        unsubscribe: () => chrome.storage.onChanged.removeListener(listener),
+      },
+    },
+  };
 }

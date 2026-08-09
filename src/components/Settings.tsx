@@ -4,6 +4,7 @@ import {
   saveApiKey,
   removeApiKey,
 } from "../services/settings";
+import { signOut } from "../auth/session";
 
 interface SettingsProps {
   onBack: () => void;
@@ -79,6 +80,13 @@ export default function Settings({
         style={{ marginLeft: 10 }}
       >
         Delete
+      </button>
+
+      <button
+        onClick={() => signOut()}
+        style={{ marginTop: 20, display: "block" }}
+      >
+        Sign out
       </button>
     </div>
   );

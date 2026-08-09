@@ -43,6 +43,13 @@ export interface RetrievedBlock {
   text: string;
 }
 
+export interface Chunk {
+  headingPath: string[];
+  blocks: SemanticBlock[];
+  combinedText: string;
+  score: number;
+}
+
 export interface ContextPayload {
   metadata: ContextMetadata;
   selectedText: string;

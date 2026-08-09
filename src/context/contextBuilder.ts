@@ -1,6 +1,5 @@
-import { walkDom } from "./domWalker";
-import { filterNoise } from "./noiseFilter";
-import { scoreBlocks } from "./scoring";
+import { classifyPage, SCORING_PROFILES } from "./classifier";
+import { getOrBuildBlocks } from "./contextCache";
 import { retrieveForAsk, retrieveForExplain } from "./retriever";
 import type { ContextPayload, OrbitAction, SemanticBlock } from "./types";
 
@@ -35,14 +34,15 @@ export function buildContext(
   let retrievedBlocks: SemanticBlock[] = [];
 
   if (action === "explain" || action === "ask") {
-    const { blocks, elementsByBlockId } = walkDom();
-    const filtered = filterNoise(blocks, elementsByBlockId);
-    scoreBlocks(filtered);
+    const { pageType } = classifyPage();
+    const { blocks, elementsByBlockId } = getOrBuildBlocks(
+      SCORING_PROFILES[pageType]
+    );
 
     retrievedBlocks =
       action === "explain"
-        ? retrieveForExplain(filtered, elementsByBlockId, selectionRange)
-        : retrieveForAsk(filtered, question || selectedText);
+        ? retrieveForExplain(blocks, elementsByBlockId, selectionRange)
+        : retrieveForAsk(blocks, question || selectedText);
   }
 
   return {

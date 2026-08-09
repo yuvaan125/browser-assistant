@@ -1,3 +1,4 @@
+import { buildChunks } from "./chunkBuilder";
 import type { SemanticBlock } from "./types";
 
 const STOPWORDS = new Set([
@@ -61,17 +62,18 @@ export function retrieveForAsk(
   question: string
 ): SemanticBlock[] {
   const questionTokens = tokenize(question);
+  const chunks = buildChunks(blocks);
 
-  const withRelevance = blocks.map((block, index) => {
-    const blockTokens = tokenize(block.text);
+  const withRelevance = chunks.map((chunk, index) => {
+    const chunkTokens = tokenize(chunk.combinedText);
     const overlap = questionTokens.filter((token) =>
-      blockTokens.includes(token)
+      chunkTokens.includes(token)
     ).length;
 
     const relevance =
-      overlap > 0 ? overlap * 10 + block.score : block.score * 0.05;
+      overlap > 0 ? overlap * 10 + chunk.score : chunk.score * 0.05;
 
-    return { block, index, relevance };
+    return { chunk, index, relevance };
   });
 
   withRelevance.sort((a, b) => b.relevance - a.relevance);
@@ -82,10 +84,10 @@ export function retrieveForAsk(
   for (const entry of withRelevance) {
     if (charTotal >= ASK_CHAR_BUDGET) break;
     selected.push(entry);
-    charTotal += entry.block.text.length;
+    charTotal += entry.chunk.combinedText.length;
   }
 
   selected.sort((a, b) => a.index - b.index);
 
-  return selected.map((entry) => entry.block);
+  return selected.flatMap((entry) => entry.chunk.blocks);
 }

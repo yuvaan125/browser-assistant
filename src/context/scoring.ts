@@ -11,8 +11,14 @@ const BASE_TYPE_WEIGHT: Record<BlockType, number> = {
   form: 5,
 };
 
-export function scoreBlock(block: SemanticBlock): number {
+export type ScoringProfile = Partial<Record<BlockType, number>>;
+
+export function scoreBlock(
+  block: SemanticBlock,
+  profile?: ScoringProfile
+): number {
   const base = BASE_TYPE_WEIGHT[block.type] ?? 10;
+  const multiplier = profile?.[block.type] ?? 1;
 
   const lengthBonus = Math.min(
     30,
@@ -28,14 +34,18 @@ export function scoreBlock(block: SemanticBlock): number {
 
   const linkPenalty = block.signals.linkDensity * 20;
 
-  const score = base + lengthBonus + headingBonus - depthPenalty - linkPenalty;
+  const score =
+    base * multiplier + lengthBonus + headingBonus - depthPenalty - linkPenalty;
 
   return Math.max(0, Math.round(score));
 }
 
-export function scoreBlocks(blocks: SemanticBlock[]): SemanticBlock[] {
+export function scoreBlocks(
+  blocks: SemanticBlock[],
+  profile?: ScoringProfile
+): SemanticBlock[] {
   blocks.forEach((block) => {
-    block.score = scoreBlock(block);
+    block.score = scoreBlock(block, profile);
   });
 
   return blocks;
