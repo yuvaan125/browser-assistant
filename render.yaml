@@ -16,8 +16,11 @@ services:
     startCommand: npm start
     healthCheckPath: /health
     envVars:
+      # Must be 22+: @supabase/supabase-js constructs a RealtimeClient on
+      # createClient and needs a native global WebSocket, which Node ships
+      # from 22 onward. On Node 20 startup crashes in websocket-factory.
       - key: NODE_VERSION
-        value: "20"
+        value: "22"
 
       # Render injects PORT automatically; server.ts already reads it.
 
