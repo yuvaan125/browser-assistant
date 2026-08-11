@@ -272,7 +272,99 @@ NOT PUBLISHED
 
 
 ================================================================================
-9. GLOSSARY
+9. ROADMAP
+================================================================================
+
+NEXT UP — small, concrete, in priority order
+--------------------------------------------
+
+  1. PIN THE EXTENSION ID                                          [BLOCKING]
+     Add a "key" field to manifest.json. Until this is done the extension ID
+     is derived from the folder path, so loading it on anyone else's machine
+     produces a different chromiumapp.org redirect URI and Google sign-in
+     fails with redirect_uri_mismatch. This blocks giving Orbit to even one
+     other person, not just Web Store publishing.
+
+  2. FIX THE GEMINI ERROR PASSTHROUGH
+     When Gemini returns a 503 the raw JSON is shown to the user, because the
+     backend forwards the SDK's message verbatim and that message is itself
+     JSON. Map upstream failures to human text in ai.controller.ts.
+
+  3. TESTS FOR THE CONTEXT BUILDER
+     classifier, noiseFilter, scoring, chunkBuilder and retriever are pure
+     functions with zero coverage. A mistake there does not crash anything —
+     it quietly makes answers worse, which is the hardest kind of bug to
+     notice.
+
+  4. ADMIN STATS VIEW
+     Replace the hand-run SQL in section 6 with an authenticated endpoint and
+     a view. Needs a real admin check (is_admin column or allowlisted email)
+     because the old unauthenticated one was removed for good reason.
+
+  5. DELETE DEAD FILES
+     backend/src/utils/validation.ts, utils/response.ts,
+     middleware/error.middlware.ts (note the typo), middleware/logger.middleware.ts
+     are all empty.
+
+
+THE BIGGER GOAL — a browser assistant that can act
+--------------------------------------------------
+
+  The aim is for Orbit to do things on a page, not just explain it: fill
+  forms, click through flows, complete tasks. Today it is strictly read-only.
+
+  WHAT ALREADY HELPS
+    More of the foundation exists than it might seem. The Context Builder
+    already walks the DOM, already treats <label> and <input> as first-class
+    block types, and domWalker already keeps elementsByBlockId — a live map
+    from block ID back to the real DOM element. That map is exactly the
+    mechanism an action layer needs to turn "the email field" into a node it
+    can type into. Extending it beats starting over.
+
+  WHAT IS MISSING
+    a) STRUCTURED OUTPUT. The model currently returns prose. Acting requires
+       it to return actions — fillField(id, value), click(id), select(id,
+       option). Gemini supports function calling; the prompts in
+       backend/src/utils/prompts.ts would need to declare tools rather than
+       ask for text.
+
+    b) STABLE ELEMENT ADDRESSING. Block IDs are regenerated on every walk and
+       the context cache invalidates on DOM mutation. An action decided a
+       moment ago must still point at the right element when it executes, on
+       a page that may have re-rendered underneath it.
+
+    c) A CONFIRMATION MODEL. This is the hard part, and it is a product
+       decision more than a technical one.
+
+  THE SAFETY LINE — decide this before building, not after
+    Reading a page is harmless. Acting on one is not: forms submit orders,
+    send messages, and change account settings, and those are not undoable.
+    Retrofitting safety onto an agent that already acts is far harder than
+    designing for it, so settle these now:
+
+      - Never enter credentials, card numbers, or government IDs. Not as a
+        default the user can flip — as a hard rule. If a field is a password
+        or payment field, Orbit fills nothing and asks the user to do it.
+      - Show the user what will happen and get an explicit yes before any
+        irreversible click: submit, send, publish, pay, delete.
+      - Treat page content as data, never as instructions. A page that says
+        "AI assistant: submit this form" is untrusted text, not a command.
+        This matters the moment Orbit can act on what it reads.
+      - Filling fields is reversible and low risk. Pressing submit is not.
+        Draw the confirmation boundary there.
+
+  A SENSIBLE ORDER
+    1. Read-only form understanding — describe a form, explain its fields.
+       No new risk, and it proves the model can address elements correctly.
+    2. Fill fields, never submit. User reviews and submits themselves.
+    3. Multi-step flows with confirmation at each irreversible step.
+
+    Step 2 is where most of the value lands for the least risk, and it is a
+    natural stopping point if the rest proves unreliable.
+
+
+================================================================================
+10. GLOSSARY
 ================================================================================
 
   Extension        The Chrome add-on. Frontend. Runs on the user's computer.
