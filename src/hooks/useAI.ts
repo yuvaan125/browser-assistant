@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-  explainText,
-  summarizeText,
-  explainPage,
-  askAboutPage,
-} from "../services/ai";
+import { runAction } from "../services/orbit";
 
 import type { ChatMessage } from "../types/chat";
 
@@ -36,6 +31,15 @@ export function useAI() {
       };
 
       setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      const errorMessage: ChatMessage = {
+        id: Date.now() + 1,
+        role: "assistant",
+        content:
+          error instanceof Error ? error.message : String(error),
+      };
+
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setLoading(false);
     }
@@ -44,47 +48,30 @@ export function useAI() {
   async function explain(text: string) {
     if (!text.trim()) return;
 
-    await runRequest(
-      "Explain the selected text",
-      () => explainText(text)
+    await runRequest("Explain the selected text", () =>
+      runAction("explain", { selectedText: text })
     );
   }
 
   async function summarize(text: string) {
     if (!text.trim()) return;
 
-    await runRequest(
-      "Summarize the selected text",
-      () => summarizeText(text)
+    await runRequest("Summarize the selected text", () =>
+      runAction("summarize", { selectedText: text })
     );
   }
 
-  async function explainEntirePage(text: string) {
-    if (!text.trim()) return;
-
-    await runRequest(
-      "Explain this webpage",
-      () => explainPage(text)
+  async function explainEntirePage() {
+    await runRequest("Explain this webpage", () =>
+      runAction("explainPage")
     );
   }
 
-  async function ask(
-    question: string,
-    pageTitle: string,
-    pageUrl: string,
-    pageText: string
-  ) {
+  async function ask(question: string) {
     if (!question.trim()) return;
 
-    await runRequest(
-      question,
-      () =>
-        askAboutPage(
-          question,
-          pageTitle,
-          pageUrl,
-          pageText
-        )
+    await runRequest(question, () =>
+      runAction("ask", { question })
     );
   }
 

@@ -12,3 +12,20 @@ export async function recordUsage(
     console.error("Failed to record usage:", error.message);
   }
 }
+
+export async function getUsageCountSince(
+  userId: string,
+  sinceIso: string
+): Promise<number> {
+  const { count, error } = await supabase
+    .from("usage_events")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .gte("created_at", sinceIso);
+
+  if (error) {
+    throw new Error(`Failed to read usage: ${error.message}`);
+  }
+
+  return count ?? 0;
+}

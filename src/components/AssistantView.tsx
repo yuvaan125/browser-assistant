@@ -38,21 +38,14 @@ export default function AssistantView() {
           />
           <ChatInput
   loading={aiLoading}
-  onSend={(message) => {
-    ask(
-      message,
-      page.title,
-      page.url,
-      page.pageText
-    );
-  }}
+  onSend={(message) => ask(message)}
 />
 
           <ActionBar
   selectedText={page.selectedText}
   onExplain={() => explain(page.selectedText)}
   onSummarize={() => summarize(page.selectedText)}
-  onExplainPage={() => explainEntirePage(page.pageText)}
+  onExplainPage={() => explainEntirePage()}
 />
 
           <button

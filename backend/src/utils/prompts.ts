@@ -47,6 +47,28 @@ Highlighted Text:
 ${request.selectedText}
 `;
 
+    case "explainPage":
+      return `
+Explain what this webpage is about.
+
+Title:
+${request.pageTitle}
+
+URL:
+${request.pageUrl}
+
+Content:
+${referenceContentFor(request)}
+
+Give a clear overview of the page's main topic and key points.
+
+Rules:
+- Maximum 120 words.
+- Lead with what the page is about in one sentence.
+- Use simple English.
+- No markdown headings.
+`;
+
     case "summarize":
       return `
 Summarize the highlighted text.

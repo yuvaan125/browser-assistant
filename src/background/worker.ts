@@ -40,6 +40,8 @@ async function sha256Hex(input: string): Promise<string> {
 async function signInWithGoogle(): Promise<{
   id: string;
   email: string | null;
+  name: string | null;
+  avatarUrl: string | null;
 }> {
   // e.g. https://<extension-id>.chromiumapp.org/
   // Registered as an Authorized redirect URI on the Google OAuth client.
@@ -96,12 +98,51 @@ async function signInWithGoogle(): Promise<{
     throw new Error("Supabase did not return a session.");
   }
 
+  const metadata = data.user.user_metadata ?? {};
+
+  const orbitUser = {
+    id: data.user.id,
+    email: data.user.email ?? null,
+    name: (metadata.full_name as string | undefined) ?? null,
+    avatarUrl: (metadata.avatar_url as string | undefined) ?? null,
+  };
+
   await chrome.storage.local.set({
     accessToken: data.session.access_token,
-    orbitUser: { id: data.user.id, email: data.user.email ?? null },
+    refreshToken: data.session.refresh_token,
+    orbitUser,
   });
 
-  return { id: data.user.id, email: data.user.email ?? null };
+  return orbitUser;
+}
+
+async function refreshAccessToken(): Promise<string> {
+  const stored = await chrome.storage.local.get("refreshToken");
+  const refreshToken = stored.refreshToken as string | undefined;
+
+  if (!refreshToken) {
+    throw new Error("No refresh token available.");
+  }
+
+  const { data, error } = await supabase.auth.refreshSession({
+    refresh_token: refreshToken,
+  });
+
+  if (error || !data.session) {
+    await chrome.storage.local.remove([
+      "accessToken",
+      "refreshToken",
+      "orbitUser",
+    ]);
+    throw new Error(error?.message ?? "Failed to refresh session.");
+  }
+
+  await chrome.storage.local.set({
+    accessToken: data.session.access_token,
+    refreshToken: data.session.refresh_token,
+  });
+
+  return data.session.access_token;
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -137,7 +178,7 @@ interface OrbitContext {
 
 interface OrbitActionMessage {
   type: "ORBIT_ACTION";
-  action: "explain" | "summarize" | "translate" | "ask";
+  action: "explain" | "explainPage" | "summarize" | "translate" | "ask";
   selectedText: string;
   pageTitle: string;
   pageUrl: string;
@@ -145,40 +186,97 @@ interface OrbitActionMessage {
   question?: string;
 }
 
+async function parseErrorMessage(response: Response): Promise<string> {
+  const text = await response.text();
+
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed?.error) return parsed.error;
+  } catch {
+    // not JSON, fall through to raw text
+  }
+
+  return text || `Request failed with status ${response.status}`;
+}
+
+const BACKEND_URL = "http://localhost:3000";
+
+async function authedFetch(
+  path: string,
+  init: RequestInit = {}
+): Promise<unknown> {
+  const stored = await chrome.storage.local.get("accessToken");
+  const accessToken = stored.accessToken as string | undefined;
+
+  const send = (token: string | undefined) =>
+    fetch(`${BACKEND_URL}${path}`, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+  let response = await send(accessToken);
+
+  if (response.status === 401) {
+    console.log("Access token rejected, attempting refresh...");
+
+    try {
+      response = await send(await refreshAccessToken());
+    } catch (refreshError) {
+      console.error("Session refresh failed:", refreshError);
+      throw new Error("Session expired. Please sign in again.");
+    }
+  }
+
+  if (!response.ok) {
+    const message = await parseErrorMessage(response);
+    console.error("Backend error:", message);
+    throw new Error(message);
+  }
+
+  return response.json();
+}
+
 async function generateWithBackend(
   action: string,
   payload: Record<string, unknown>
 ): Promise<string> {
-  const { accessToken } = await chrome.storage.local.get("accessToken");
-
-  console.log("Access Token:", accessToken);
-
-  const response = await fetch("http://localhost:3000/ai", {
+  const data = (await authedFetch("/ai", {
     method: "POST",
-
-    headers: {
-      "Content-Type": "application/json",
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    },
-
-    body: JSON.stringify({
-      action,
-      ...payload,
-    }),
-  });
-
-  console.log("Response Status:", response.status);
-
-  if (!response.ok) {
-    const text = await response.text();
-    console.error("Backend Response:", text);
-    throw new Error(`Backend ${response.status}: ${text}`);
-  }
-
-  const data = await response.json();
+    body: JSON.stringify({ action, ...payload }),
+  })) as { result: string };
 
   return data.result;
 }
+
+interface UsageStats {
+  used: number;
+  limit: number;
+  remaining: number;
+}
+
+async function fetchUsage(): Promise<UsageStats> {
+  return (await authedFetch("/ai/usage")) as UsageStats;
+}
+
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.type !== "GET_USAGE") {
+    return;
+  }
+
+  fetchUsage()
+    .then((usage) => sendResponse({ success: true, usage }))
+    .catch((error) =>
+      sendResponse({
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    );
+
+  return true;
+});
 
 // ======================================
 // Orbit Message Handler
@@ -207,6 +305,16 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       switch (action) {
         case "explain":
           result = await generateWithBackend("explain", {
+            selectedText,
+            pageTitle,
+            pageUrl,
+            context,
+          });
+
+          break;
+
+        case "explainPage":
+          result = await generateWithBackend("explainPage", {
             selectedText,
             pageTitle,
             pageUrl,

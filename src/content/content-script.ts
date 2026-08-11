@@ -871,6 +871,29 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     });
   }
 
+  // Lets the popup build page context without duplicating the pipeline —
+  // the content script is the only place with DOM access and the live
+  // selection range that "explain" anchors to.
+  if (message.type === "BUILD_CONTEXT") {
+    const selection = window.getSelection();
+
+    const selectedText =
+      selection?.toString().trim() || currentSelection;
+
+    const selectionRange =
+      selection && selection.rangeCount > 0 && selection.toString().trim()
+        ? selection.getRangeAt(0).cloneRange()
+        : currentSelectionRange;
+
+    sendResponse(
+      buildContext(message.action as OrbitAction, {
+        selectedText,
+        question: message.question,
+        selectionRange,
+      })
+    );
+  }
+
   return true;
 });
 

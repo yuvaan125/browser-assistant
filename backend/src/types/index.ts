@@ -1,5 +1,6 @@
 export type AIAction =
   | "explain"
+  | "explainPage"
   | "summarize"
   | "translate"
   | "ask";

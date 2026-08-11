@@ -55,7 +55,35 @@ export function retrieveForExplain(
   return blocks.slice(start, end + 1);
 }
 
-const ASK_CHAR_BUDGET = 4000;
+const CHAR_BUDGET = 4000;
+
+/**
+ * Whole-page retrieval: the highest quality chunks representing the entire
+ * page, rather than chunks matched against a specific question.
+ */
+export function retrieveForPage(
+  blocks: SemanticBlock[]
+): SemanticBlock[] {
+  const chunks = buildChunks(blocks).map((chunk, index) => ({
+    chunk,
+    index,
+  }));
+
+  chunks.sort((a, b) => b.chunk.score - a.chunk.score);
+
+  const selected: typeof chunks = [];
+  let charTotal = 0;
+
+  for (const entry of chunks) {
+    if (charTotal >= CHAR_BUDGET) break;
+    selected.push(entry);
+    charTotal += entry.chunk.combinedText.length;
+  }
+
+  selected.sort((a, b) => a.index - b.index);
+
+  return selected.flatMap((entry) => entry.chunk.blocks);
+}
 
 export function retrieveForAsk(
   blocks: SemanticBlock[],
@@ -82,7 +110,7 @@ export function retrieveForAsk(
   let charTotal = 0;
 
   for (const entry of withRelevance) {
-    if (charTotal >= ASK_CHAR_BUDGET) break;
+    if (charTotal >= CHAR_BUDGET) break;
     selected.push(entry);
     charTotal += entry.chunk.combinedText.length;
   }

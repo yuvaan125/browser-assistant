@@ -1,6 +1,8 @@
 export interface OrbitUser {
   id: string;
   email: string | null;
+  name: string | null;
+  avatarUrl: string | null;
 }
 
 export async function getCurrentUser(): Promise<OrbitUser | null> {
@@ -9,7 +11,11 @@ export async function getCurrentUser(): Promise<OrbitUser | null> {
 }
 
 export async function signOut() {
-  await chrome.storage.local.remove(["accessToken", "orbitUser"]);
+  await chrome.storage.local.remove([
+    "accessToken",
+    "refreshToken",
+    "orbitUser",
+  ]);
 }
 
 export function onAuthStateChange(

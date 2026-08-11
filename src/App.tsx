@@ -1,9 +1,9 @@
 import "./App.css";
 import { useEffect, useState } from "react";
-import { Settings as SettingsIcon } from "lucide-react";
+import { User as UserIcon } from "lucide-react";
 
 import AssistantView from "./components/AssistantView";
-import Settings from "./components/Settings";
+import AccountView from "./components/AccountView";
 import LoginScreen from "./components/LoginScreen";
 
 import { getCurrentUser, onAuthStateChange, type OrbitUser } from "./auth/session";
@@ -12,9 +12,7 @@ export default function App() {
   const [user, setUser] = useState<OrbitUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [view, setView] = useState<"assistant" | "settings">(
-    "assistant"
-  );
+  const [view, setView] = useState<"assistant" | "account">("assistant");
 
   useEffect(() => {
     getCurrentUser().then((user) => {
@@ -60,19 +58,26 @@ export default function App() {
         {view === "assistant" && (
           <button
             className="icon-button"
-            onClick={() => setView("settings")}
-            aria-label="Open Settings"
+            onClick={() => setView("account")}
+            aria-label="Open Account"
           >
-            <SettingsIcon size={18} />
+            {user.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt=""
+                style={{ width: 18, height: 18, borderRadius: "50%" }}
+              />
+            ) : (
+              <UserIcon size={18} />
+            )}
           </button>
         )}
       </header>
 
-      {view === "assistant" ? (
-  <AssistantView />
-) : (
-  <Settings onBack={() => setView("assistant")} />
-)}
+      {view === "assistant" && <AssistantView />}
+      {view === "account" && (
+        <AccountView user={user} onBack={() => setView("assistant")} />
+      )}
     </div>
   );
 }

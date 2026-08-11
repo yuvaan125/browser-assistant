@@ -31,7 +31,12 @@ export interface SemanticBlock {
   score: number;
 }
 
-export type OrbitAction = "explain" | "summarize" | "translate" | "ask";
+export type OrbitAction =
+  | "explain"
+  | "explainPage"
+  | "summarize"
+  | "translate"
+  | "ask";
 
 export interface ContextMetadata {
   title: string;

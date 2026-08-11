@@ -1,6 +1,10 @@
 import { classifyPage, SCORING_PROFILES } from "./classifier";
 import { getOrBuildBlocks } from "./contextCache";
-import { retrieveForAsk, retrieveForExplain } from "./retriever";
+import {
+  retrieveForAsk,
+  retrieveForExplain,
+  retrieveForPage,
+} from "./retriever";
 import type { ContextPayload, OrbitAction, SemanticBlock } from "./types";
 
 export interface BuildContextOptions {
@@ -33,16 +37,23 @@ export function buildContext(
 
   let retrievedBlocks: SemanticBlock[] = [];
 
-  if (action === "explain" || action === "ask") {
+  if (action === "explain" || action === "ask" || action === "explainPage") {
     const { pageType } = classifyPage();
     const { blocks, elementsByBlockId } = getOrBuildBlocks(
       SCORING_PROFILES[pageType]
     );
 
-    retrievedBlocks =
-      action === "explain"
-        ? retrieveForExplain(blocks, elementsByBlockId, selectionRange)
-        : retrieveForAsk(blocks, question || selectedText);
+    if (action === "explain") {
+      retrievedBlocks = retrieveForExplain(
+        blocks,
+        elementsByBlockId,
+        selectionRange
+      );
+    } else if (action === "explainPage") {
+      retrievedBlocks = retrieveForPage(blocks);
+    } else {
+      retrievedBlocks = retrieveForAsk(blocks, question || selectedText);
+    }
   }
 
   return {
