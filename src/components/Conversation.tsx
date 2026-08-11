@@ -1,4 +1,4 @@
-import { Bot, Copy, Sparkles, User } from "lucide-react";
+import { Bot, Copy, Sparkles, Trash2, User } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -9,11 +9,13 @@ import "./Conversation.css";
 interface ConversationProps {
   messages: ChatMessage[];
   loading: boolean;
+  onClear: () => void;
 }
 
 function Conversation({
   messages,
   loading,
+  onClear,
 }: ConversationProps) {
 
   async function copyMessage(text: string) {
@@ -23,8 +25,21 @@ function Conversation({
   return (
     <div className="card conversation-card">
       <div className="conversation-header">
-        <Sparkles size={18} />
-        <h3>Conversation</h3>
+        <span className="card-heading">
+          <Sparkles size={15} />
+          Conversation
+        </span>
+
+        {messages.length > 0 && (
+          <button
+            className="btn-icon btn-icon-sm"
+            onClick={onClear}
+            aria-label="Clear conversation"
+            title="Clear conversation"
+          >
+            <Trash2 size={14} />
+          </button>
+        )}
       </div>
 
       {messages.length === 0 && !loading && (
@@ -66,10 +81,11 @@ function Conversation({
 
             {message.role === "assistant" && (
               <button
-                className="copy-button"
+                className="btn-icon btn-icon-sm"
                 onClick={() => copyMessage(message.content)}
+                aria-label="Copy response"
               >
-                <Copy size={15} />
+                <Copy size={14} />
               </button>
             )}
 

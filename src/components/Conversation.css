@@ -1,95 +1,104 @@
 .conversation-card {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--space-3);
 }
 
 .conversation-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.conversation-header h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
+  justify-content: space-between;
+  gap: var(--space-2);
 }
 
 .conversation-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-3);
 
-  padding: 28px;
+  padding: var(--space-6) var(--space-4);
 
-  border: 2px dashed var(--border);
-  border-radius: 14px;
+  background: var(--surface-alt);
+  border-radius: var(--radius);
 
-  color: var(--text-secondary);
+  color: var(--text-muted);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
   text-align: center;
 }
 
-.message {
-  padding: 16px;
-
-  border-radius: 14px;
-
-  animation: fadeIn .25s ease;
-
-  transition: .2s;
+.conversation-empty svg {
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 
-.message:hover {
-  transform: translateY(-1px);
+/* ==========================================
+   Messages
+   ========================================== */
+
+.message {
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  animation: fadeIn 0.22s ease;
 }
 
 .user-message {
-  background: var(--primary-light);
+  background: var(--primary-tint);
+  border: 1px solid var(--primary-border);
 }
 
 .assistant-message {
   background: var(--surface-alt);
+  border: 1px solid var(--border);
 }
 
 .message-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
 
-  margin-bottom: 12px;
+  margin-bottom: var(--space-2);
+}
 
-  font-weight: 700;
+.message-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 
-  color: var(--text);
+  font-size: var(--text-xs);
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.user-message .message-title {
+  color: var(--primary);
 }
 
 .message-content {
   color: var(--text);
-
-  font-size: 14px;
-
-  line-height: 1.7;
-
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
   word-break: break-word;
 }
 
 .thinking {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
+
+  padding: var(--space-3);
 
   color: var(--primary);
-
+  font-size: var(--text-base);
   font-weight: 600;
 }
 
-/* ---------------- Markdown ---------------- */
-
-.markdown-body {
-  color: var(--text);
-}
+/* ==========================================
+   Markdown
+   ========================================== */
 
 .markdown-body > *:first-child {
   margin-top: 0;
@@ -103,113 +112,92 @@
 .markdown-body h2,
 .markdown-body h3,
 .markdown-body h4 {
-  margin: 22px 0 10px;
-
+  margin: var(--space-4) 0 var(--space-2);
+  font-size: var(--text-md);
   font-weight: 700;
-
   color: var(--text);
 }
 
 .markdown-body p {
-  margin: 10px 0;
+  margin: var(--space-2) 0;
 }
 
 .markdown-body ul,
 .markdown-body ol {
-  margin: 10px 0;
-  padding-left: 22px;
+  margin: var(--space-2) 0;
+  padding-left: var(--space-5);
 }
 
 .markdown-body li {
-  margin: 6px 0;
+  margin: var(--space-1) 0;
 }
 
-.markdown-body strong {
-  font-weight: 700;
+.markdown-body a {
+  color: var(--primary);
 }
 
 .markdown-body code {
+  padding: 2px 5px;
+
   background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
 
-  padding: 2px 6px;
-
-  border-radius: 6px;
-
-  font-family: Consolas, monospace;
-
-  font-size: .92em;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
 }
 
 .markdown-body pre {
-  background: #111827;
-
-  color: white;
-
-  padding: 16px;
-
-  border-radius: 12px;
-
+  padding: var(--space-3);
   overflow-x: auto;
+
+  background: #16161d;
+  border-radius: var(--radius-sm);
+
+  color: #e8e8ef;
+  font-size: var(--text-sm);
 }
 
 .markdown-body pre code {
-  background: transparent;
   padding: 0;
+  background: transparent;
+  border: none;
 }
 
 .markdown-body blockquote {
-  margin: 14px 0;
-  padding-left: 14px;
+  margin: var(--space-3) 0;
+  padding-left: var(--space-3);
 
-  border-left: 4px solid var(--primary);
-
+  border-left: 3px solid var(--primary-border);
   color: var(--text-secondary);
 }
 
 .markdown-body table {
   width: 100%;
   border-collapse: collapse;
+  font-size: var(--text-sm);
 }
 
 .markdown-body th,
 .markdown-body td {
+  padding: var(--space-2);
   border: 1px solid var(--border);
-  padding: 8px;
+  text-align: left;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-.message-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 
-.copy-button {
-  width: 32px;
-  height: 32px;
-
-  border-radius: 8px;
-
-  background: transparent;
-
-  color: var(--text-secondary);
-
-  border: none;
-
-  transition: .2s;
-}
-
-.copy-button:hover {
-  background: var(--surface);
-  color: var(--primary);
+@media (prefers-reduced-motion: reduce) {
+  .message {
+    animation: none;
+  }
 }

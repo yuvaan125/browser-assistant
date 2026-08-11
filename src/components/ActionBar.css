@@ -1,25 +1,22 @@
 .action-grid {
   display: grid;
-
   grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
 
-  gap: 12px;
-
-  margin-top: 20px;
+  margin-bottom: var(--space-3);
 }
 
-.action-grid button {
-  display: flex;
+.action-grid .btn {
+  height: 42px;
+  font-size: var(--text-base);
+}
 
-  align-items: center;
+.action-grid svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
 
-  justify-content: center;
-
-  gap: 8px;
-
-  height: 46px;
-
-  font-size: 14px;
-
-  font-weight: 600;
+/* Icon inherits the label colour on hover so the button reads as one unit. */
+.action-grid .btn-secondary:hover:not(:disabled) svg {
+  color: currentColor;
 }

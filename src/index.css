@@ -4,15 +4,17 @@ body,
   margin: 0;
   padding: 0;
 
-  width: 460px;
-  min-width: 460px;
-  max-width: 460px;
+  width: 420px;
+  min-width: 420px;
+  max-width: 420px;
 
-  min-height: 650px;
+  min-height: 600px;
 
   background: var(--background);
 
-  font-family: Inter, system-ui, sans-serif;
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
 
   overflow-x: hidden;
 }
@@ -23,4 +25,37 @@ body,
 
 body {
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+input {
+  font-family: inherit;
+}
+
+/* Slim scrollbars — the default macOS/Windows ones are heavy in a 420px popup */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }

@@ -37,11 +37,13 @@ export default function ChatInput({
       />
 
       <button
+        className="btn btn-primary"
         type="button"
-        disabled={loading}
+        aria-label="Send"
+        disabled={loading || !text.trim()}
         onClick={handleSubmit}
       >
-        <Send size={18} />
+        <Send size={17} />
       </button>
     </div>
   );

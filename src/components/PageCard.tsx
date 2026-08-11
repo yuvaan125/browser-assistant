@@ -16,8 +16,8 @@ function PageCard({ page }: PageCardProps) {
           <Globe size={20} />
         </div>
 
-        <div>
-          <h3>Current Page</h3>
+        <div className="page-card-body">
+          <h3 className="card-label">Current Page</h3>
           <p className="page-title">{page.title}</p>
           <a
             href={page.url}

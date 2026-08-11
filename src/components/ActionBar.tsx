@@ -28,23 +28,27 @@ function ActionBar({
 
   return (
     <div className="action-grid">
-      <button onClick={onExplain}>
-        <Sparkles size={18} />
+      <button className="btn btn-secondary" onClick={onExplain}>
+        <Sparkles size={16} />
         Explain
       </button>
 
-      <button onClick={onSummarize}>
-        <FileText size={18} />
+      <button className="btn btn-secondary" onClick={onSummarize}>
+        <FileText size={16} />
         Summarize
       </button>
 
-      <button onClick={onExplainPage}>
-        <Globe size={18} />
+      <button className="btn btn-secondary" onClick={onExplainPage}>
+        <Globe size={16} />
         Explain Page
       </button>
 
-      <button onClick={handleCopy}>
-        <Copy size={18} />
+      <button
+        className="btn btn-secondary"
+        onClick={handleCopy}
+        disabled={!selectedText}
+      >
+        <Copy size={16} />
         Copy
       </button>
     </div>

@@ -1,40 +1,125 @@
 :root {
-  /* Brand */
+  /* ==========================================
+     Typography
+
+     No webfont: the extension CSP blocks remote fonts, and bundling one
+     costs ~100kb for a popup. This stack resolves to the platform UI font
+     (SF Pro / Segoe UI / Roboto), which is what "Inter" was silently
+     falling back to anyway.
+     ========================================== */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, monospace;
+
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.55;
+  --leading-relaxed: 1.7;
+
+  /* ==========================================
+     Brand
+     ========================================== */
   --primary: #7c3aed;
   --primary-hover: #6d28d9;
-  --primary-light: #f3e8ff;
+  --primary-active: #5b21b6;
+  --primary-tint: #f5f0ff;
+  --primary-tint-hover: #ede4ff;
+  --primary-border: #ddd6fe;
+  --primary-contrast: #ffffff;
+  --primary-gradient: linear-gradient(135deg, #6d28d9, #8b5cf6);
 
-  /* Status */
+  /* ==========================================
+     Status
+     ========================================== */
   --success: #16a34a;
   --danger: #dc2626;
+  --danger-tint: #fef2f2;
+  --danger-border: #fecaca;
   --warning: #d97706;
 
-  /* Backgrounds */
-  --background: #f8fafc;
+  /* ==========================================
+     Surfaces
+     ========================================== */
+  --background: #f7f7fa;
   --surface: #ffffff;
-  --surface-alt: #f1f5f9;
+  --surface-alt: #f4f4f7;
+  --surface-hover: #eeeef3;
 
-  /* Borders */
-  --border: #e2e8f0;
+  --border: #e6e6ec;
+  --border-strong: #d4d4dd;
 
-  /* Text */
-  --text: #0f172a;
-  --text-secondary: #64748b;
+  /* ==========================================
+     Text
+     ========================================== */
+  --text: #17171f;
+  --text-secondary: #6a6a78;
+  --text-muted: #9494a3;
 
-  /* Radius */
+  /* ==========================================
+     Radius
+     ========================================== */
   --radius-sm: 8px;
-  --radius: 14px;
-  --radius-lg: 20px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
 
-  /* Shadows */
-  --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.05);
-  --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  /* ==========================================
+     Shadows
+     ========================================== */
+  --shadow-xs: 0 1px 2px rgba(15, 15, 25, 0.04);
+  --shadow-sm: 0 2px 8px rgba(15, 15, 25, 0.05);
+  --shadow: 0 8px 24px rgba(15, 15, 25, 0.08);
+  --shadow-primary: 0 4px 14px rgba(124, 58, 237, 0.28);
 
-  /* Spacing */
+  /* ==========================================
+     Spacing
+     ========================================== */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
+  --space-5: 20px;
+  --space-6: 28px;
+
+  --transition: 0.16s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #a78bfa;
+    --primary-hover: #b9a2fc;
+    --primary-active: #c9b8fd;
+    --primary-tint: #241d38;
+    --primary-tint-hover: #2e2545;
+    --primary-border: #443464;
+    --primary-contrast: #1a1720;
+
+    --danger: #f87171;
+    --danger-tint: #2c1a1c;
+    --danger-border: #6b2c2c;
+
+    --background: #131318;
+    --surface: #1b1b22;
+    --surface-alt: #24242c;
+    --surface-hover: #2c2c36;
+
+    --border: #2e2e38;
+    --border-strong: #3d3d49;
+
+    --text: #f2f2f5;
+    --text-secondary: #a0a0b0;
+    --text-muted: #74748a;
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    --shadow-primary: 0 4px 14px rgba(139, 92, 246, 0.3);
+  }
 }

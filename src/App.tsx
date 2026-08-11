@@ -31,7 +31,7 @@ export default function App() {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="app-loading">Loading...</div>;
   }
 
   if (!user) {
@@ -57,16 +57,12 @@ export default function App() {
 
         {view === "assistant" && (
           <button
-            className="icon-button"
+            className="btn-icon"
             onClick={() => setView("account")}
             aria-label="Open Account"
           >
             {user.avatarUrl ? (
-              <img
-                src={user.avatarUrl}
-                alt=""
-                style={{ width: 18, height: 18, borderRadius: "50%" }}
-              />
+              <img src={user.avatarUrl} alt="" className="app-avatar" />
             ) : (
               <UserIcon size={18} />
             )}

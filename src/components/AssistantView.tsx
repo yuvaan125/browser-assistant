@@ -11,51 +11,45 @@ export default function AssistantView() {
   const { page, loading, error } = useCurrentPage();
 
   const {
-  messages,
-  loading: aiLoading,
-  explain,
-  summarize,
-  explainEntirePage,
-  ask,
-  clearConversation,
-} = useAI();
+    messages,
+    loading: aiLoading,
+    explain,
+    summarize,
+    explainEntirePage,
+    ask,
+    clearConversation,
+  } = useAI();
+
+  if (loading) {
+    return <p className="app-loading">Loading page...</p>;
+  }
+
+  if (error) {
+    return <p className="app-error">{error}</p>;
+  }
+
+  if (!page) return null;
 
   return (
     <>
-      {loading && <p>Loading...</p>}
+      <PageCard page={page} />
 
-      {error && <p>{error}</p>}
+      <SelectedTextCard text={page.selectedText} />
 
-      {page && (
-        <>
-          <PageCard page={page} />
+      <ActionBar
+        selectedText={page.selectedText}
+        onExplain={() => explain(page.selectedText)}
+        onSummarize={() => summarize(page.selectedText)}
+        onExplainPage={() => explainEntirePage()}
+      />
 
-          <SelectedTextCard text={page.selectedText} />
+      <Conversation
+        messages={messages}
+        loading={aiLoading}
+        onClear={clearConversation}
+      />
 
-          <Conversation
-            messages={messages}
-            loading={aiLoading}
-          />
-          <ChatInput
-  loading={aiLoading}
-  onSend={(message) => ask(message)}
-/>
-
-          <ActionBar
-  selectedText={page.selectedText}
-  onExplain={() => explain(page.selectedText)}
-  onSummarize={() => summarize(page.selectedText)}
-  onExplainPage={() => explainEntirePage()}
-/>
-
-          <button
-            onClick={clearConversation}
-            style={{ marginTop: 12 }}
-          >
-            Clear Conversation
-          </button>
-        </>
-      )}
+      <ChatInput loading={aiLoading} onSend={(message) => ask(message)} />
     </>
   );
 }

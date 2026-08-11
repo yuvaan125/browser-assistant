@@ -9,8 +9,10 @@ function SelectedTextCard({ text }: SelectedTextCardProps) {
   return (
     <div className="card">
       <div className="selected-header">
-        <Quote size={18} />
-        <h3>Selected Text</h3>
+        <span className="card-heading">
+          <Quote size={15} />
+          Selected Text
+        </span>
       </div>
 
       {text ? (

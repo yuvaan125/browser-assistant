@@ -1,10 +1,14 @@
 import { useState } from "react";
 
+import "./LoginScreen.css";
+
 export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleGoogleLogin() {
     setLoading(true);
+    setError(null);
 
     try {
       // The actual OAuth flow runs in the background service worker, not here.
@@ -21,24 +25,37 @@ export default function LoginScreen() {
       }
     } catch (err) {
       console.error("Google sign-in failed:", err);
-      alert(err instanceof Error ? err.message : String(err));
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100%",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <button onClick={handleGoogleLogin} disabled={loading}>
-        {loading ? "Signing in..." : "Continue with Google"}
-      </button>
+    <div className="login">
+      <img src="/icons/icon128.png" alt="" className="login-logo" />
+
+      <h1 className="login-title">Orbit AI</h1>
+
+      <p className="login-subtitle">
+        Explain, summarize, and ask questions about any page you're reading.
+      </p>
+
+      <div className="login-actions">
+        <button
+          className="btn btn-block btn-primary"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+        >
+          {loading ? "Signing in..." : "Continue with Google"}
+        </button>
+
+        {error && <p className="login-error">{error}</p>}
+
+        <p className="login-footnote">
+          Free to use, 50 requests per day.
+        </p>
+      </div>
     </div>
   );
 }

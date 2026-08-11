@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { User as UserIcon } from "lucide-react";
+import { ArrowLeft, LogOut, User as UserIcon } from "lucide-react";
 import type { OrbitUser } from "../auth/session";
 import { signOut } from "../auth/session";
+
+import "./AccountView.css";
 
 interface AccountViewProps {
   user: OrbitUser;
@@ -36,133 +38,81 @@ export default function AccountView({ user, onBack }: AccountViewProps) {
     : 0;
 
   return (
-    <div>
-      <button onClick={onBack}>← Back</button>
+    <>
+      <div className="subview-header">
+        <button className="btn-icon" onClick={onBack} aria-label="Back">
+          <ArrowLeft size={18} />
+        </button>
+        <span className="subview-title">Account</span>
+      </div>
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 12,
-          padding: "24px 0",
-        }}
-      >
-        {user.avatarUrl ? (
-          <img
-            src={user.avatarUrl}
-            alt={user.name ?? user.email ?? "Account"}
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: "50%",
-              objectFit: "cover",
-            }}
-          />
-        ) : (
-          <div
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: "50%",
-              background: "var(--surface-alt)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <UserIcon size={32} color="var(--text-secondary)" />
-          </div>
-        )}
-
-        <div style={{ textAlign: "center" }}>
-          {user.name && (
-            <div style={{ fontSize: 16, fontWeight: 600 }}>{user.name}</div>
+      <div className="card">
+        <div className="account-profile">
+          {user.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt=""
+              className="account-avatar"
+            />
+          ) : (
+            <div className="account-avatar-fallback">
+              <UserIcon size={28} />
+            </div>
           )}
-          <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-            {user.email}
+
+          <div className="account-identity">
+            {user.name && <div className="account-name">{user.name}</div>}
+            <div className="account-email">{user.email}</div>
           </div>
         </div>
       </div>
 
-      <div
-        style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          borderRadius: "var(--radius)",
-          padding: 16,
-          marginBottom: 16,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline",
-            marginBottom: 10,
-          }}
-        >
-          <span style={{ fontSize: 13, fontWeight: 600 }}>Daily usage</span>
+      <div className="card">
+        <div className="usage-header">
+          <span className="card-label">Daily usage</span>
 
           {usage && (
-            <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+            <span className="usage-count">
               {usage.used} / {usage.limit}
             </span>
           )}
         </div>
 
         {usageError && (
-          <div style={{ fontSize: 12, color: "var(--danger)" }}>
-            {usageError}
-          </div>
+          <div className="usage-state is-error">{usageError}</div>
         )}
 
         {!usage && !usageError && (
-          <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-            Loading...
-          </div>
+          <div className="usage-state">Loading...</div>
         )}
 
         {usage && (
           <>
-            <div
-              style={{
-                height: 6,
-                borderRadius: 999,
-                background: "var(--surface-alt)",
-                overflow: "hidden",
-              }}
-            >
+            <div className="usage-track">
               <div
-                style={{
-                  width: `${percentUsed}%`,
-                  height: "100%",
-                  background:
-                    usage.remaining === 0
-                      ? "var(--danger)"
-                      : "var(--primary)",
-                }}
+                className={`usage-fill${
+                  usage.remaining === 0 ? " is-full" : ""
+                }`}
+                style={{ width: `${percentUsed}%` }}
               />
             </div>
 
-            <div
-              style={{
-                marginTop: 8,
-                fontSize: 12,
-                color: "var(--text-secondary)",
-              }}
-            >
+            <p className="usage-note">
               {usage.remaining > 0
                 ? `${usage.remaining} requests remaining today`
                 : "Daily limit reached. Resets 24h after your earliest request."}
-            </div>
+            </p>
           </>
         )}
       </div>
 
-      <button onClick={() => signOut()} style={{ width: "100%" }}>
+      <button
+        className="btn btn-block btn-danger-ghost"
+        onClick={() => signOut()}
+      >
+        <LogOut size={16} />
         Sign out
       </button>
-    </div>
+    </>
   );
 }
