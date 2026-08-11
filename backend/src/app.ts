@@ -1,6 +1,10 @@
 import express from "express";
 import cors from "cors";
 
+// Imported first so a missing variable fails with a clear message before any
+// SDK is constructed with undefined config.
+import { allowedOrigins } from "./config/env";
+
 import aiRoutes from "./routes/ai.routes";
 import healthRoutes from "./routes/health.routes";
 import { rateLimit } from "./middleware/rateLimit.middleware";
@@ -18,10 +22,6 @@ app.set("trust proxy", 1);
  * origins just prevents arbitrary sites from making credentialed calls.
  * Unset (local dev) stays permissive.
  */
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
-
 app.use(
   cors(
     allowedOrigins?.length
