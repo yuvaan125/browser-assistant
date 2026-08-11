@@ -1,32 +1,40 @@
-import testRoutes from "./routes/test.routes";
 import express from "express";
 import cors from "cors";
 
+import aiRoutes from "./routes/ai.routes";
+import healthRoutes from "./routes/health.routes";
+import { rateLimit } from "./middleware/rateLimit.middleware";
 
 const app = express();
 
-import aiRoutes from "./routes/ai.routes";
+// Render (and most hosts) terminate TLS at a proxy, so req.ip is the proxy's
+// address unless we trust the forwarding header. The rate limiter keys on
+// req.ip, so without this every request shares one bucket.
+app.set("trust proxy", 1);
 
-import authRoutes from "./routes/auth.routes";
+/**
+ * CORS is a browser-enforced mechanism — it does nothing to a direct HTTP
+ * client, so requireAuth remains the actual security boundary. Restricting
+ * origins just prevents arbitrary sites from making credentialed calls.
+ * Unset (local dev) stays permissive.
+ */
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
-app.use("/test", testRoutes);
+app.use(
+  cors(
+    allowedOrigins?.length
+      ? { origin: allowedOrigins }
+      : {}
+  )
+);
 
+app.use(express.json({ limit: "1mb" }));
 
-app.use(cors());
+app.use(rateLimit);
 
-app.use(express.json());
-
-app.use("/auth", authRoutes);
-
+app.use("/health", healthRoutes);
 app.use("/ai", aiRoutes);
-
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "ok",
-    service: "Orbit Backend",
-    version: "1.0.0",
-    timestamp: new Date().toISOString()
-  });
-});
 
 export default app;

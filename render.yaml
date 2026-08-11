@@ -1,0 +1,36 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+#
+# Create the service from this file (Render dashboard > New > Blueprint)
+# rather than clicking through the UI, so the config lives in the repo.
+#
+# Secrets are marked `sync: false`, which makes Render prompt for them on
+# first deploy instead of reading them from git.
+
+services:
+  - type: web
+    name: orbit-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+
+      # Render injects PORT automatically; server.ts already reads it.
+
+      - key: SUPABASE_URL
+        sync: false
+
+      # Must be the legacy JWT-format service_role key (starts with "eyJ").
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+
+      - key: GEMINI_API_KEY
+        sync: false
+
+      # Set to chrome-extension://<your-extension-id> once known.
+      - key: ALLOWED_ORIGINS
+        sync: false

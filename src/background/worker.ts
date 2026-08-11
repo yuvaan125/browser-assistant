@@ -199,7 +199,12 @@ async function parseErrorMessage(response: Response): Promise<string> {
   return text || `Request failed with status ${response.status}`;
 }
 
-const BACKEND_URL = "http://localhost:3000";
+// Inlined by Vite at build time. Unset (local dev) falls back to localhost;
+// production builds run with VITE_BACKEND_URL set to the deployed origin.
+// vite.config.ts reads the same variable to keep manifest host_permissions
+// in sync — they must agree or the fetch is blocked by the extension sandbox.
+const BACKEND_URL =
+  import.meta.env.VITE_BACKEND_URL ?? "http://localhost:3000";
 
 async function authedFetch(
   path: string,
