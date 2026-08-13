@@ -137,6 +137,13 @@ function positionButtonToSelection() {
 
   const rect = currentSelectionRange.getBoundingClientRect();
 
+  // Scrolled out of view. Without this the button keeps tracking the selection
+  // and gets clamped to an edge, pointing at nothing.
+  if (rect.bottom < 0 || rect.top > window.innerHeight) {
+    hideButton();
+    return;
+  }
+
   showButton(rect.right + 8, rect.top - 10);
 }
 
@@ -164,8 +171,11 @@ document.addEventListener("mousedown", (event) => {
 // ======================================
 
 let repositionQueued = false;
+let menuNeedsReposition = false;
 
-function queueReposition() {
+function queueReposition(alsoMenu: boolean) {
+  menuNeedsReposition ||= alsoMenu;
+
   if (repositionQueued) return;
 
   repositionQueued = true;
@@ -173,16 +183,23 @@ function queueReposition() {
   requestAnimationFrame(() => {
     repositionQueued = false;
 
-    // Fixed positioning doesn't scroll with the document, so both the button
-    // and the menu have to be re-anchored to the (moved) selection.
+    // Fixed positioning doesn't scroll with the document, so the button has to
+    // be re-anchored to the (moved) selection.
     positionButtonToSelection();
 
-    if (isMenuOpen()) positionMenu();
+    if (menuNeedsReposition) positionMenu();
+
+    menuNeedsReposition = false;
   });
 }
 
-window.addEventListener("scroll", queueReposition, true);
-window.addEventListener("resize", queueReposition);
+// The menu deliberately stays put while scrolling. Once it's open it's what
+// the user is reading, and re-anchoring would drag the text they're partway
+// through off the screen along with the selection.
+window.addEventListener("scroll", () => queueReposition(false), true);
+
+// A resize can leave the menu hanging off the new viewport, so re-anchor it.
+window.addEventListener("resize", () => queueReposition(true));
 
 // ======================================
 // Chrome messaging
@@ -236,8 +253,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
 mountUI({
   onButtonClick: () => {
+    // openMenu positions once the menu has a measurable height.
     renderMainMenu();
-    positionMenu();
     openMenu();
   },
   onAction: handleMenuAction,

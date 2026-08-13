@@ -54,6 +54,20 @@ const MENU_ITEMS: {
   },
 ];
 
+/** Keeps the button and menu clear of the viewport edges. */
+const VIEWPORT_MARGIN = 8;
+
+/** Gap between the button and the menu anchored to it. */
+const ANCHOR_GAP = 8;
+
+/** Matches .orbit-button in styles.css. */
+const BUTTON_SIZE = 42;
+
+/** Min wins when the element is larger than the space available. */
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(value, max));
+}
+
 let host: HTMLDivElement | null = null;
 let root: ShadowRoot | null = null;
 let button: HTMLButtonElement | null = null;
@@ -198,8 +212,21 @@ async function copyResponse(copyBtn: Element | null) {
 export function showButton(viewportX: number, viewportY: number) {
   if (!button) return;
 
-  button.style.left = `${viewportX}px`;
-  button.style.top = `${viewportY}px`;
+  // A selection ending at the right margin would otherwise push the button
+  // half off screen, and one on the first visible line would put it above the
+  // fold — rect.top - 10 goes negative there.
+  button.style.left = `${clamp(
+    viewportX,
+    VIEWPORT_MARGIN,
+    window.innerWidth - BUTTON_SIZE - VIEWPORT_MARGIN
+  )}px`;
+
+  button.style.top = `${clamp(
+    viewportY,
+    VIEWPORT_MARGIN,
+    window.innerHeight - BUTTON_SIZE - VIEWPORT_MARGIN
+  )}px`;
+
   button.classList.add("is-visible");
 }
 
@@ -223,7 +250,12 @@ export function isMenuOpen(): boolean {
 export function openMenu() {
   if (!menu) return;
 
+  // is-open flips display to flex, which gives the menu a real height to
+  // measure. It's still at opacity 0 here, so positioning lands before
+  // anything is painted and there's no visible jump.
   menu.classList.add("is-open");
+
+  positionMenu();
 
   requestAnimationFrame(() => menu?.classList.add("is-visible"));
 }
@@ -236,17 +268,50 @@ export function closeMenu() {
   setTimeout(() => menu?.classList.remove("is-open"), 180);
 }
 
-/** Anchors the menu under the button, keeping it inside the viewport. */
+/**
+ * Anchors the menu to the button, flipping above it when there isn't room
+ * below and clamping so it always lands fully inside the viewport.
+ *
+ * The size is measured rather than assumed, because every view has a different
+ * height — a position that fits the loading state overflows once a long
+ * response replaces it. That's why the render functions call this too.
+ */
 export function positionMenu() {
-  if (!button || !menu) return;
+  if (!button || !menu || !menu.classList.contains("is-open")) return;
 
-  const rect = button.getBoundingClientRect();
-  const menuWidth = 300;
+  const anchor = button.getBoundingClientRect();
 
-  const left = Math.min(rect.left, window.innerWidth - menuWidth - 8);
+  // offset*, not getBoundingClientRect: the rect is post-transform, and the
+  // menu sits at scale(0.95) until it fades in, which would under-measure it.
+  const width = menu.offsetWidth;
+  const height = menu.offsetHeight;
 
-  menu.style.left = `${Math.max(8, left)}px`;
-  menu.style.top = `${rect.bottom + 8}px`;
+  const spaceBelow =
+    window.innerHeight - anchor.bottom - ANCHOR_GAP - VIEWPORT_MARGIN;
+  const spaceAbove = anchor.top - ANCHOR_GAP - VIEWPORT_MARGIN;
+
+  // Below is the default; flip only when above is genuinely roomier.
+  const openUp = height > spaceBelow && spaceAbove > spaceBelow;
+
+  const top = openUp
+    ? anchor.top - ANCHOR_GAP - height
+    : anchor.bottom + ANCHOR_GAP;
+
+  menu.style.top = `${clamp(
+    top,
+    VIEWPORT_MARGIN,
+    window.innerHeight - height - VIEWPORT_MARGIN
+  )}px`;
+
+  menu.style.left = `${clamp(
+    anchor.left,
+    VIEWPORT_MARGIN,
+    window.innerWidth - width - VIEWPORT_MARGIN
+  )}px`;
+
+  // Grow from the edge nearest the button so it reads as opening out of it,
+  // rather than swelling from its own centre.
+  menu.style.transformOrigin = openUp ? "bottom left" : "top left";
 }
 
 // ======================================
@@ -272,6 +337,8 @@ export function renderMainMenu() {
       ).join("")}
     </div>
   `;
+
+  positionMenu();
 }
 
 export function renderAsk() {
@@ -291,6 +358,8 @@ export function renderAsk() {
     ${footerHtml(false)}
   `;
 
+  positionMenu();
+
   menu.querySelector<HTMLInputElement>('[data-role="question"]')?.focus();
 }
 
@@ -308,6 +377,8 @@ export function renderLoading() {
       </div>
     </div>
   `;
+
+  positionMenu();
 }
 
 export function renderResponse(text: string) {
@@ -325,6 +396,10 @@ export function renderResponse(text: string) {
   // markup. `white-space: pre-wrap` preserves the line breaks.
   const target = menu.querySelector(".orbit-response");
   if (target) target.textContent = text;
+
+  // After the text lands — the response is the one view whose height depends
+  // on its content, so measuring before this would be measuring an empty box.
+  positionMenu();
 }
 
 export function renderError(message: string) {
@@ -338,4 +413,6 @@ export function renderError(message: string) {
 
   const target = menu.querySelector(".orbit-response");
   if (target) target.textContent = message;
+
+  positionMenu();
 }
